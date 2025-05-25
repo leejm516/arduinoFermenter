@@ -1,4 +1,5 @@
-#include <MyFermenter.h>
+#include "MyFermenter.h"
+#include "MAX31865.h"
 
 void MyFermenter::onBaseControl(void) {
     lastBaseTime_ = millis();            
@@ -41,11 +42,19 @@ void MyFermenter::setBaseOffInterval(unsigned long interval) {
     if (interval <= 300*1000) {baseOffInterval_ = interval;}
 }
 
-void MyFermenter::update() {
+void MyFermenter::readTempSensor(MAX31865_RTD temp) {
+    if (temp.status() == 0) {
+        currentTemp_ = temp.temperature();
+    }
+}
+
+void MyFermenter::update(MAX31865_RTD temp) {
     nowTime_ = millis();
 
     currentPh_ = (7.0f + 0.1 * sin(2*PI*((float)nowTime_/1000/60/1.7) ) );
-    currentTemp_ = (37.0f + cos(2*PI*((float)nowTime_/1000/60/4) ) );
+    // currentTemp_ = (37.0f + cos(2*PI*((float)nowTime_/1000/60/4) ) );
+    temp.read_all();
+    readTempSensor(temp);
     
     if (millis() % 1000 == 0) {
       Serial.print("현재의 pH는 ");

@@ -1,7 +1,11 @@
 #include <Arduino.h>
+#include <SPI.h>
 #include "Relay.h"
 #include "ControlLoop.h"
 #include "MyFermenter.h"
+#include "MAX31865.h"
+
+MAX31865_RTD tempSensor(MAX31865_RTD::RTD_PT100, 36);
 
 MyFermenter fermenter1;
 
@@ -92,9 +96,14 @@ void setup() {
   Serial.begin(9600);
   delay(2000);
 
-  pinMode(48, OUTPUT);
-  
+  // pinMode(48, OUTPUT);
 
+  SPI.begin();
+  SPI.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE3));
+  delay(1000);
+  tempSensor.configure( true, true, false, false, MAX31865_FAULT_DETECTION_NONE,
+                 true, false, 0x0000, 0x7fff );
+                 
   Serial.println("기동");
   Serial.print("HeaterPin 번호는: ");
   Serial.println(fermenter1.getHeaterPin());
@@ -120,12 +129,14 @@ void setup() {
   // heatControlLoop.setDirectionIncrease(ControlLoop::INNER, 1); // pid 제어에서만 작동함
   heatControlLoop.setOn();  
 
+  
+
   while (true) {        
-    fermenter1.update();
+    fermenter1.update(tempSensor);
     baseControlLoop.Compute();
     coolControlLoop.Compute();
     heatControlLoop.Compute();
-  }
+  } 
 }
 
 void loop() {
