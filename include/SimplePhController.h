@@ -1,5 +1,5 @@
-#ifndef _SIMPLEPhCONTROLLER_H
-#define _SIMPLEPhCONTROLLER_H
+#ifndef _SIMPLEPHCONTROLLER_H
+#define _SIMPLEPHCONTROLLER_H
 #include <Arduino.h>
 
 class SimplePhController {

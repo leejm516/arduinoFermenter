@@ -1,21 +1,98 @@
 #include <Arduino.h>
 #include "SimplePhController.h"
+#include "Relay.h"
+#include "ControlLoop.h"
+#include "TemperatureController.h"
+
 
 // put function declarations here:
 // int myFunction(int, int);
 
 SimplePhController phControl(30, 31);
 
+// For temp control using Relay.h and ControlLoop.h
+TemperatureController tempCon(36);
+
+Relay heaterRelay(32, 2);
+Relay coolerRelay(33, 2);
+
+
+
+class : public DataSource{
+  public:
+    double get() {
+      return tempCon.getCurrentTemp();
+    }
+} tempDataSource;
+
+class : public RelayUpdate {
+  public:
+    void on() {
+      heaterRelay.setRelayMode(relayModeAutomatic);
+    }
+    void off() {
+      heaterRelay.setRelayMode(relayModeManual);
+      heaterRelay.setDutyCyclePercent(0.0);
+    }
+    void update(double res) {
+      heaterRelay.setDutyCyclePercent(res);
+      heaterRelay.loop();
+    }
+} heater;
+
+class : public RelayUpdate {
+  public:
+    void on() {
+      coolerRelay.setRelayMode(relayModeAutomatic);
+    }
+    void off() {
+      coolerRelay.setRelayMode(relayModeManual);
+      coolerRelay.setDutyCyclePercent(0.0);
+    }
+    void update(double res) {
+      coolerRelay.setDutyCyclePercent(res);
+      coolerRelay.loop();
+    }
+} cooler;
+
+ControlLoop heaterControlLoop(&tempDataSource, &heater, tempCon.getSetTemp());
+ControlLoop coolerControlLoop(&tempDataSource, &cooler, tempCon.getSetTemp());
+
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   delay(2000);
 
+  // pH control
   phControl.setOutput();
   phControl.setControlOn();
 
+  tempCon.init();
+  delay(100);
+
+  // Temp control
+  // cooler loop
+  coolerControlLoop.setControlType(ControlLoop::STD);
+  coolerControlLoop.setBangBangRange(0.5, 5);
+  coolerControlLoop.enableBangBang();
+  coolerControlLoop.setOutputLimits(ControlLoop::INNER, 0.0, 1.0);
+  coolerControlLoop.setTunings(0.05, 0.005, 0.001);
+  coolerControlLoop.setDirectionIncrease(ControlLoop::INNER, 0); // pid 제어에서만 작동함
+  coolerControlLoop.setOn();  
+  
+  // heater loop
+  heaterControlLoop.setControlType(ControlLoop::STD);
+  heaterControlLoop.setBangBangRange(5, 0.5);
+  heaterControlLoop.enableBangBang();
+  heaterControlLoop.setOutputLimits(ControlLoop::INNER, 0.0, 1.0);
+  heaterControlLoop.setTunings(0.05, 0.005, 0.001);
+  heaterControlLoop.setDirectionIncrease(ControlLoop::INNER, 1); // pid 제어에서만 작동함
+  heaterControlLoop.setOn();  
+
   while (true) {
-    if ( millis() % 1000 == 0 ) {
+    unsigned long ct = millis();
+    if ( ct % 1000 == 0 ) {
         Serial.print("현재 pH: ");
         Serial.print(phControl.getCurrentPh());
 
@@ -23,10 +100,18 @@ void setup() {
         Serial.print(phControl.getCurrentState());
 
         Serial.print(", 마지막 event: ");
-        Serial.println(phControl.getLastEvent());
+        Serial.print(phControl.getLastEvent());
+
+        Serial.print(", 현재 온도:");
+        Serial.print(tempCon.getCurrentTemp());
+        Serial.println("°C");
     }
     phControl.detectEvent();
-    phControl.processState(millis());
+    phControl.processState(ct);
+
+    tempCon.update();
+    coolerControlLoop.Compute();
+    heaterControlLoop.Compute();
   } 
 }
 
