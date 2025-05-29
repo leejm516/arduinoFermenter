@@ -64,6 +64,10 @@ void setup() {
   Serial.begin(9600);
   delay(2000);
 
+  // Init SPI communication
+  SPI.begin();
+  SPI.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE3));
+
   // pH control
   phControl.setOutput();
   phControl.setControlOn();
