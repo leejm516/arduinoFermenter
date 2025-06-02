@@ -3,7 +3,7 @@
 #include "Relay.h"
 #include "ControlLoop.h"
 #include "TemperatureController.h"
-
+#include "FermenterData.h"
 
 // put function declarations here:
 // int myFunction(int, int);
@@ -16,7 +16,8 @@ TemperatureController tempCon(36);
 Relay heaterRelay(32, 2);
 Relay coolerRelay(33, 2);
 
-
+// Structs for communication with ESP32
+PvProfile pvProfile;
 
 class : public DataSource{
   public:
@@ -94,8 +95,15 @@ void setup() {
   heaterControlLoop.setDirectionIncrease(ControlLoop::INNER, 1); // pid 제어에서만 작동함
   heaterControlLoop.setOn();  
 
+  // Start of the main loop
   while (true) {
     unsigned long ct = millis();
+
+    // Save measured profile into a PvProfile struct
+    pvProfile.temp = tempCon.getCurrentTemp();
+    pvProfile.ph = phControl.getCurrentPh();
+
+    // print some data
     if ( ct % 1000 == 0 ) {
         Serial.print("현재 pH: ");
         Serial.print(phControl.getCurrentPh());
@@ -109,7 +117,9 @@ void setup() {
         Serial.print(", 현재 온도:");
         Serial.print(tempCon.getCurrentTemp());
         Serial.println("°C");
-    }
+    }   
+
+
     phControl.detectEvent();
     phControl.processState(ct);
 
