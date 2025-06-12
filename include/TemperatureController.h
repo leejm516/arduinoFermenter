@@ -1,17 +1,21 @@
 #ifndef _TEMPERATURECONTROLLER_H
 #define _TEMPERATURECONTROLLER_H
 #include <Arduino.h>
-#include <SPI.h>
-#include "MAX31865.h"
+#include <Adafruit_MAX31865.h>
 
 class TemperatureController {
     public:
-        TemperatureController(uint8_t sp) : tempSensor(MAX31865_RTD::RTD_PT100, sp) {
+        // TemperatureController(uint8_t sp) : tempSensor(MAX31865_RTD::RTD_PT100, sp) {
+        //     currentTemp_ = 0.0;
+        //     setTemp_ = 37.0;
+        // }
+
+        TemperatureController(uint8_t cs, uint8_t mosi, uint8_t miso, uint8_t clk) : tempSensor(cs, mosi, miso, clk) {
             currentTemp_ = 0.0;
             setTemp_ = 37.0;
         }
         
-        void init(void);
+        void init(max31865_numwires_t);
 
         void update(void);
 
@@ -19,7 +23,7 @@ class TemperatureController {
 
         float getSetTemp(void);
     private:
-        MAX31865_RTD tempSensor;
+        Adafruit_MAX31865 tempSensor;
         float currentTemp_;
         float setTemp_;
        

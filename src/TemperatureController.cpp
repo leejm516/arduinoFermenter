@@ -1,15 +1,18 @@
 #include "TemperatureController.h"
 
-void TemperatureController::init() {
-    tempSensor.configure( true, true, false, false, MAX31865_FAULT_DETECTION_NONE,
-                 true, false, 0x0000, 0x7fff ); // 2 wire RTD
+void TemperatureController::init(max31865_numwires_t numwire) {
+    tempSensor.begin(numwire);
 }
 
 void TemperatureController::update() {
-    tempSensor.read_all();
-    if (tempSensor.status() == 0) {
-        currentTemp_ = tempSensor.temperature();
+    uint8_t fault = tempSensor.readFault();    
+    if (fault == 0) {
+        currentTemp_ = tempSensor.temperature(100, 430);
     }
+    // tempSensor.read_all();
+    // if (tempSensor.status() == 0) {
+    //     currentTemp_ = tempSensor.temperature();
+    // }
 }
 
 float TemperatureController::getCurrentTemp() {    

@@ -11,7 +11,7 @@
 SimplePhController phControl(30, 31);
 
 // For temp control using Relay.h and ControlLoop.h
-TemperatureController tempCon(36);
+TemperatureController tempCon(36, 51, 50, 52);
 
 Relay heaterRelay(32, 2);
 Relay coolerRelay(33, 2);
@@ -65,15 +65,12 @@ void setup() {
   Serial.begin(9600);
   delay(2000);
 
-  // Init SPI communication
-  SPI.begin();
-  SPI.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE3));
-
-  // pH control
+    // pH control
   phControl.setOutput();
   phControl.setControlOn();
 
-  tempCon.init();
+  tempCon.init(MAX31865_2WIRE);
+
   delay(100);
 
   // Temp control
