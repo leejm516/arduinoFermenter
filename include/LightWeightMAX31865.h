@@ -1,0 +1,85 @@
+#ifndef LIGHTWEIGHT_MAX31865_H
+#define LIGHTWEIGHT_MAX31865_H
+
+#include <Arduino.h>
+#include <SPI.h>
+
+// Register addresses
+#define MAX31865_CONFIG_REG           0x00
+#define MAX31865_RTD_MSB_REG          0x01
+#define MAX31865_RTD_LSB_REG          0x02
+#define MAX31865_HIGH_FAULT_MSB_REG   0x03
+#define MAX31865_HIGH_FAULT_LSB_REG   0x04
+#define MAX31865_LOW_FAULT_MSB_REG    0x05
+#define MAX31865_LOW_FAULT_LSB_REG    0x06
+#define MAX31865_FAULT_STATUS_REG     0x07
+
+// Configuration register bits
+#define MAX31865_CONFIG_BIAS          0x80
+#define MAX31865_CONFIG_MODEAUTO      0x40
+#define MAX31865_CONFIG_1SHOT         0x20
+#define MAX31865_CONFIG_3WIRE         0x10
+#define MAX31865_CONFIG_FAULTCLEAR    0x02
+#define MAX31865_CONFIG_FILTER50HZ    0x01
+
+// Fault status bits
+#define MAX31865_FAULT_HIGH_THRESHOLD 0x80
+#define MAX31865_FAULT_LOW_THRESHOLD  0x40
+#define MAX31865_FAULT_REFIN_HIGH     0x20
+#define MAX31865_FAULT_REFIN_LOW      0x10
+#define MAX31865_FAULT_RTDIN_LOW      0x08
+#define MAX31865_FAULT_VOLTAGE        0x04
+
+typedef enum {
+    MAX31865_2WIRE = 0,
+    MAX31865_3WIRE = 1,
+    MAX31865_4WIRE = 0
+} max31865_numwires_t;
+
+class LightweightMAX31865 {
+public:
+    // Constructor for hardware SPI
+    LightweightMAX31865(uint8_t cs);
+    
+    // Constructor for software SPI
+    LightweightMAX31865(uint8_t cs, uint8_t mosi, uint8_t miso, uint8_t clk);
+    
+    // Initialize the sensor
+    bool begin(max31865_numwires_t wires = MAX31865_2WIRE);
+    
+    // Read temperature in Celsius
+    float temperature(float rtd_nominal = 100.0, float ref_resistor = 430.0);
+    
+    // Read raw ADC value
+    uint16_t readRTD();
+    
+    // Check for faults
+    uint8_t readFault();
+    
+    // Clear faults
+    void clearFault();
+    
+    // Enable/disable bias voltage
+    void enableBias(bool enable);
+    
+    // Trigger one-shot conversion
+    void triggerOneShot();
+
+private:
+    uint8_t _cs;
+    uint8_t _mosi, _miso, _clk;
+    bool _use_hardware_spi;
+    
+    // SPI communication functions
+    void writeRegister8(uint8_t reg, uint8_t value);
+    uint8_t readRegister8(uint8_t reg);
+    uint16_t readRegister16(uint8_t reg);
+    
+    // Software SPI functions
+    uint8_t softSPITransfer(uint8_t data);
+    
+    // Temperature calculation
+    float calculateTemperature(uint16_t rtd_raw, float rtd_nominal, float ref_resistor);
+};
+
+#endif
