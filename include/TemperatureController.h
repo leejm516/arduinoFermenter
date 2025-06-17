@@ -1,7 +1,7 @@
 #ifndef _TEMPERATURECONTROLLER_H
 #define _TEMPERATURECONTROLLER_H
 #include <Arduino.h>
-#include <Adafruit_MAX31865.h>
+#include "LightweightMAX31865.h"
 
 class TemperatureController {
     public:
@@ -23,7 +23,7 @@ class TemperatureController {
 
         float getSetTemp(void);
     private:
-        Adafruit_MAX31865 tempSensor;
+        LightweightMAX31865 tempSensor;
         float currentTemp_;
         float setTemp_;
        

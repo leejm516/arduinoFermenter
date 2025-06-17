@@ -7,7 +7,7 @@ void TemperatureController::init(max31865_numwires_t numwire) {
 void TemperatureController::update() {
     uint8_t fault = tempSensor.readFault();    
     if (fault == 0) {
-        currentTemp_ = tempSensor.temperature(100, 430);
+        currentTemp_ = tempSensor.temperature();
     }
     // tempSensor.read_all();
     // if (tempSensor.status() == 0) {
