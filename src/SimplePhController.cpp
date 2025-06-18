@@ -1,4 +1,4 @@
-#include "SimplePhController.h"
+#include "simplephcontroller.h"
 
 typedef uint8_t (SimplePhController::*EventDetector)();
 

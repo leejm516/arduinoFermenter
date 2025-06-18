@@ -1,13 +1,14 @@
-#include "TemperatureController.h"
+#include "temperaturecontroller.h"
 
 void TemperatureController::init(max31865_numwires_t numwire) {
     tempSensor.begin(numwire);
+    tempSensor.setOffset(0.24f);
 }
 
 void TemperatureController::update() {
     uint8_t fault = tempSensor.readFault();    
     if (fault == 0) {
-        currentTemp_ = tempSensor.temperature();
+        current_temp_ = tempSensor.temperature();
     }
     // tempSensor.read_all();
     // if (tempSensor.status() == 0) {
@@ -16,9 +17,9 @@ void TemperatureController::update() {
 }
 
 float TemperatureController::getCurrentTemp() {    
-    return currentTemp_;
+    return current_temp_;
 }
 
 float TemperatureController::getSetTemp() {    
-    return setTemp_;
+    return set_temp_;
 }

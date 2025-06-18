@@ -7,7 +7,7 @@
  *         Sept. 13, 2017
  */
 
-#include "Relay.h"
+#include "relay.h"
 #include <Arduino.h>
 
 Relay::Relay(uint8_t pin, uint16_t periodInSeconds): _pin(pin), _periodInSeconds(periodInSeconds) {

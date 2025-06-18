@@ -11,7 +11,7 @@
 SimplePhController phControl(30, 31);
 
 // For temp control using Relay.h and ControlLoop.h
-TemperatureController tempCon(36, 51, 50, 52);
+TemperatureController tempCon(46);
 
 Relay heaterRelay(32, 2);
 Relay coolerRelay(33, 2);
@@ -94,6 +94,7 @@ void setup() {
 
   // Start of the main loop
   while (true) {
+    static uint32_t pt = 0;
     unsigned long ct = millis();
 
     // Save measured profile into a PvProfile struct
@@ -101,7 +102,8 @@ void setup() {
     pvProfile.ph = phControl.getCurrentPh();
 
     // print some data
-    if ( ct % 1000 == 0 ) {
+    if ( ct - pt >= 1000 ) {
+        pt = ct;
         Serial.print("현재 pH: ");
         Serial.print(phControl.getCurrentPh());
 
