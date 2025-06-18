@@ -1,29 +1,27 @@
-#include "LightweightMAX31865.h"
+#include "lightweightmax31865.h"
 
 // Hardware SPI constructor
-LightweightMAX31865::LightweightMAX31865(uint8_t cs) : _cs(cs), _use_hardware_spi(true) {
-    pinMode(_cs, OUTPUT);
-    digitalWrite(_cs, HIGH);
+LightweightMAX31865::LightweightMAX31865(uint8_t cs) : cs_(cs), use_hardware_spi_(true) {
+    pinMode(cs_, OUTPUT);
+    digitalWrite(cs_, HIGH);
 }
 
 // Software SPI constructor
 LightweightMAX31865::LightweightMAX31865(uint8_t cs, uint8_t mosi, uint8_t miso, uint8_t clk) 
-    : _cs(cs), _mosi(mosi), _miso(miso), _clk(clk), _use_hardware_spi(false) {
-    pinMode(_cs, OUTPUT);
-    pinMode(_mosi, OUTPUT);
-    pinMode(_miso, INPUT);
-    pinMode(_clk, OUTPUT);
+    : cs_(cs), mosi_(mosi), miso_(miso), clk_(clk), use_hardware_spi_(false) {
+    pinMode(cs_, OUTPUT);
+    pinMode(mosi_, OUTPUT);
+    pinMode(miso_, INPUT);
+    pinMode(clk_, OUTPUT);
     
-    digitalWrite(_cs, HIGH);
-    digitalWrite(_clk, LOW);
-    digitalWrite(_mosi, LOW);
+    digitalWrite(cs_, HIGH);
+    digitalWrite(clk_, LOW);
+    digitalWrite(mosi_, LOW);
 }
 
 bool LightweightMAX31865::begin(max31865_numwires_t wires) {
-    if (_use_hardware_spi) {
+    if (use_hardware_spi_) {
         SPI.begin();
-        SPI.setDataMode(SPI_MODE1);
-        SPI.setClockDivider(SPI_CLOCK_DIV16);
     }
     
     // Configure the sensor
@@ -100,39 +98,43 @@ void LightweightMAX31865::triggerOneShot() {
     writeRegister8(MAX31865_CONFIG_REG, config);
 }
 
+void LightweightMAX31865::setOffset(float offset) {
+    r_offset_ = offset;
+}
+
 void LightweightMAX31865::writeRegister8(uint8_t reg, uint8_t value) {
     reg |= 0x80; // Set write bit
     
-    if (_use_hardware_spi) {
-        SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE1));
-        digitalWrite(_cs, LOW);
+    if (use_hardware_spi_) {
+        SPI.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE1));
+        digitalWrite(cs_, LOW);
         SPI.transfer(reg);
         SPI.transfer(value);
-        digitalWrite(_cs, HIGH);
+        digitalWrite(cs_, HIGH);
         SPI.endTransaction();
     } else {
-        digitalWrite(_cs, LOW);
+        digitalWrite(cs_, LOW);
         softSPITransfer(reg);
         softSPITransfer(value);
-        digitalWrite(_cs, HIGH);
+        digitalWrite(cs_, HIGH);
     }
 }
 
 uint8_t LightweightMAX31865::readRegister8(uint8_t reg) {
     uint8_t result;
     
-    if (_use_hardware_spi) {
-        SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE1));
-        digitalWrite(_cs, LOW);
+    if (use_hardware_spi_) {
+        SPI.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE1));
+        digitalWrite(cs_, LOW);
         SPI.transfer(reg);
         result = SPI.transfer(0xFF);
-        digitalWrite(_cs, HIGH);
+        digitalWrite(cs_, HIGH);
         SPI.endTransaction();
     } else {
-        digitalWrite(_cs, LOW);
+        digitalWrite(cs_, LOW);
         softSPITransfer(reg);
         result = softSPITransfer(0xFF);
-        digitalWrite(_cs, HIGH);
+        digitalWrite(cs_, HIGH);
     }
     
     return result;
@@ -141,20 +143,20 @@ uint8_t LightweightMAX31865::readRegister8(uint8_t reg) {
 uint16_t LightweightMAX31865::readRegister16(uint8_t reg) {
     uint16_t result;
     
-    if (_use_hardware_spi) {
-        SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE1));
-        digitalWrite(_cs, LOW);
+    if (use_hardware_spi_) {
+        SPI.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE1));
+        digitalWrite(cs_, LOW);
         SPI.transfer(reg);
         result = SPI.transfer(0xFF) << 8;
         result |= SPI.transfer(0xFF);
-        digitalWrite(_cs, HIGH);
+        digitalWrite(cs_, HIGH);
         SPI.endTransaction();
     } else {
-        digitalWrite(_cs, LOW);
+        digitalWrite(cs_, LOW);
         softSPITransfer(reg);
         result = softSPITransfer(0xFF) << 8;
         result |= softSPITransfer(0xFF);
-        digitalWrite(_cs, HIGH);
+        digitalWrite(cs_, HIGH);
     }
     
     return result;
@@ -164,11 +166,11 @@ uint8_t LightweightMAX31865::softSPITransfer(uint8_t data) {
     uint8_t result = 0;
     
     for (int i = 7; i >= 0; i--) {
-        digitalWrite(_mosi, (data >> i) & 0x01);
-        digitalWrite(_clk, HIGH);
+        digitalWrite(mosi_, (data >> i) & 0x01);
+        digitalWrite(clk_, HIGH);
         delayMicroseconds(1);
-        result = (result << 1) | digitalRead(_miso);
-        digitalWrite(_clk, LOW);
+        result = (result << 1) | digitalRead(miso_);
+        digitalWrite(clk_, LOW);
         delayMicroseconds(1);
     }
     
@@ -182,6 +184,7 @@ float LightweightMAX31865::calculateTemperature(uint16_t rtd_raw, float rtd_nomi
     
     // Convert ADC value to resistance
     float rtd_resistance = (rtd_raw * ref_resistor) / 32768.0;
+    rtd_resistance -= r_offset_;
     
     // Callendar-Van Dusen equation (simplified for PT100)
     // R(T) = R0 * (1 + A*T + B*T^2)

@@ -70,9 +70,12 @@ public:
     // Trigger one-shot conversion
     void triggerOneShot();
 
+    void setOffset(float offset);
+
 private:
-    uint8_t _cs, _mosi, _miso, _clk;
-    bool _use_hardware_spi;
+    uint8_t cs_, mosi_, miso_, clk_;
+    bool use_hardware_spi_;
+    float r_offset_;
     
     // SPI communication functions
     void writeRegister8(uint8_t reg, uint8_t value);
