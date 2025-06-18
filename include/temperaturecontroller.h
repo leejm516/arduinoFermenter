@@ -1,7 +1,7 @@
 #ifndef _TEMPERATURECONTROLLER_H
 #define _TEMPERATURECONTROLLER_H
 #include <Arduino.h>
-#include "LightweightMAX31865.h"
+#include "lightweightmax31865.h"
 
 class TemperatureController {
     public:
