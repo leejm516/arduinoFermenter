@@ -1,9 +1,9 @@
 #include <Arduino.h>
-#include "SimplePhController.h"
-#include "Relay.h"
-#include "ControlLoop.h"
-#include "TemperatureController.h"
-#include "FermenterData.h"
+#include "simplephcontroller.h"
+#include "relay.h"
+#include "controlloop.h"
+#include "temperaturecontroller.h"
+#include "fermenterdata.h"
 
 // put function declarations here:
 // int myFunction(int, int);
