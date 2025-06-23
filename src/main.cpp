@@ -92,9 +92,10 @@ void setup() {
   heaterControlLoop.setDirectionIncrease(ControlLoop::INNER, 1); // pid 제어에서만 작동함
   heaterControlLoop.setOn();  
 
+  uint32_t pt = millis();
+  
   // Start of the main loop
-  while (true) {
-    static uint32_t pt = 0;
+  while (true) {    
     unsigned long ct = millis();
 
     // Save measured profile into a PvProfile struct
@@ -103,7 +104,7 @@ void setup() {
 
     // print some data
     if ( ct - pt >= 1000 ) {
-        pt = ct;
+        pt += 1000;
         Serial.print("현재 pH: ");
         Serial.print(phControl.getCurrentPh());
 
