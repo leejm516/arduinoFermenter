@@ -9,58 +9,58 @@
 
 
 // Initialization of objects and structures
-SimplePhController phControl(30, 31);
+SimplePhController ph_control(30, 31);
 
 // For temp control using Relay.h and ControlLoop.h
-TemperatureController tempCon(46);
+TemperatureController temp_controller(46);
 
-Relay heaterRelay(32, 2);
-Relay coolerRelay(33, 2);
+Relay heater_relay(32, 2);
+Relay cooler_relay(33, 2);
 
 // Structs for communication with ESP32
-PvProfile pvProfile;
+PvProfile pv_profile;
 
 
-// Anonymous classes from relay.h
+// Anonymous classes to use controlloop.h
 class : public DataSource{
   public:
     double get() {
-      return tempCon.getCurrentTemp();
+      return temp_controller.getCurrentTemp();
     }
-} tempDataSource;
+} temp_data_source;
 
 class : public RelayUpdate {
   public:
     void on() {
-      heaterRelay.setRelayMode(relayModeAutomatic);
+      heater_relay.setRelayMode(kRelayModeAutomatic);
     }
     void off() {
-      heaterRelay.setRelayMode(relayModeManual);
-      heaterRelay.setDutyCyclePercent(0.0);
+      heater_relay.setRelayMode(kRelayModeManual);
+      heater_relay.setDutyCyclePercent(0.0);
     }
     void update(double res) {
-      heaterRelay.setDutyCyclePercent(res);
-      heaterRelay.loop();
+      heater_relay.setDutyCyclePercent(res);
+      heater_relay.loop();
     }
 } heater;
 
 class : public RelayUpdate {
   public:
     void on() {
-      coolerRelay.setRelayMode(relayModeAutomatic);
+      cooler_relay.setRelayMode(kRelayModeAutomatic);
     }
     void off() {
-      coolerRelay.setRelayMode(relayModeManual);
-      coolerRelay.setDutyCyclePercent(0.0);
+      cooler_relay.setRelayMode(kRelayModeManual);
+      cooler_relay.setDutyCyclePercent(0.0);
     }
     void update(double res) {
-      coolerRelay.setDutyCyclePercent(res);
-      coolerRelay.loop();
+      cooler_relay.setDutyCyclePercent(res);
+      cooler_relay.loop();
     }
 } cooler;
 
-ControlLoop heaterControlLoop(&tempDataSource, &heater, tempCon.getSetTemp());
-ControlLoop coolerControlLoop(&tempDataSource, &cooler, tempCon.getSetTemp());
+ControlLoop heaterControlLoop(&temp_data_source, &heater, temp_controller.getSetTemp());
+ControlLoop coolerControlLoop(&temp_data_source, &cooler, temp_controller.getSetTemp());
 
 
 void setup() {
@@ -69,10 +69,10 @@ void setup() {
   delay(2000);
 
     // pH control
-  phControl.setOutput();
-  phControl.setControlOn();
+  ph_control.setOutput();
+  ph_control.setControlOn();
 
-  tempCon.init(MAX31865_2WIRE);
+  temp_controller.init(MAX31865_2WIRE);
 
   delay(100);
 
@@ -102,31 +102,31 @@ void setup() {
     unsigned long ct = millis();
 
     // Save measured profile into a PvProfile struct
-    pvProfile.temp = tempCon.getCurrentTemp();
-    pvProfile.ph = phControl.getCurrentPh();
+    pv_profile.temp = temp_controller.getCurrentTemp();
+    pv_profile.ph = ph_control.getCurrentPh();
 
     // print some data
     if ( ct - pt >= 1000 ) {
         pt += 1000;
         Serial.print("현재 pH: ");
-        Serial.print(phControl.getCurrentPh());
+        Serial.print(ph_control.getCurrentPh());
 
         Serial.print(", 현재 state: ");
-        Serial.print(phControl.getCurrentState());
+        Serial.print(ph_control.getCurrentState());
 
         Serial.print(", 마지막 event: ");
-        Serial.print(phControl.getLastEvent());
+        Serial.print(ph_control.getLastEvent());
 
         Serial.print(", 현재 온도:");
-        Serial.print(tempCon.getCurrentTemp());
+        Serial.print(temp_controller.getCurrentTemp());
         Serial.println("°C");
     }   
 
 
-    phControl.detectEvent();
-    phControl.processState(ct);
+    ph_control.detectEvent();
+    ph_control.processState(ct);
 
-    tempCon.update();
+    temp_controller.update();
     coolerControlLoop.Compute();
     heaterControlLoop.Compute();
   } 

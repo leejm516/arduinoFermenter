@@ -13,36 +13,36 @@
 #include <stdint.h>
 
 typedef enum {
-  relayModeManual,
-  relayModeAutomatic
+  kRelayModeManual,
+  kRelayModeAutomatic
 } RelayMode;
 
 typedef enum {
-  relayPositionOpen,
-  relayPositionClosed
+  kRelayPositionOpen,
+  kRelayPositionClosed
 } RelayPosition;
 
 class Relay {
   public:
-    Relay(uint8_t pin, uint16_t periodInSeconds);
+    Relay(uint8_t pin, uint16_t period_in_seconds_);
     void setRelayMode(RelayMode mode);
     RelayMode getRelayMode(void);
     void setRelayPosition(RelayPosition position);
     RelayPosition getRelayPosition(void);
     void setDutyCyclePercent(double dutyCycle);
     double getDutyCyclePercent(void);
-    void setPeriodInSeconds(uint16_t periodInSeconds);
+    void setPeriodInSeconds(uint16_t period_in_seconds_);
     uint16_t getPeriodInSeconds(void);
     void loop(void);
 
   private:
-    uint8_t _pin;
-    uint16_t _periodInSeconds;
-    double _dutyCycle;
-    RelayMode _mode;
-    RelayPosition _position;
-    uint32_t _periodTime;
-    uint32_t _oldTime;
+    uint8_t pin_;
+    uint16_t period_in_seconds_;
+    double duty_cycle_;
+    RelayMode mode_;
+    RelayPosition position_;
+    uint32_t period_time_;
+    uint32_t old_time_;
 };
 
 #endif // RELAY_H

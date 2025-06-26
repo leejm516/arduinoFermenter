@@ -10,87 +10,87 @@
 #include "relay.h"
 #include <Arduino.h>
 
-Relay::Relay(uint8_t pin, uint16_t periodInSeconds): _pin(pin), _periodInSeconds(periodInSeconds) {
-    pinMode(_pin, OUTPUT);
-    digitalWrite(_pin, LOW);
-    _dutyCycle = 0.5;
-    _mode = relayModeManual;
-    _position = relayPositionOpen;
+Relay::Relay(uint8_t pin, uint16_t period_in_seconds): pin_(pin), period_in_seconds_(period_in_seconds) {
+    pinMode(pin_, OUTPUT);
+    digitalWrite(pin_, LOW);
+    duty_cycle_ = 0.5;
+    mode_ = kRelayModeManual;
+    position_ = kRelayPositionOpen;
 }
 
 void Relay::setRelayMode(RelayMode mode) {
    switch (mode) {
-      case relayModeManual:
-         _mode = mode;
-         setRelayPosition(relayPositionOpen);
+      case kRelayModeManual:
+         mode_ = mode;
+         setRelayPosition(kRelayPositionOpen);
          break;
-      case relayModeAutomatic:
-         if (relayModeAutomatic != _mode) {
-            _mode = mode;
-            _periodTime = 0;
-            _oldTime = millis();
+      case kRelayModeAutomatic:
+         if (mode_ != kRelayModeAutomatic) {
+            mode_ = mode;
+            period_time_ = 0;
+            old_time_ = millis();
          }
          break;
    }
 }
 
 RelayMode Relay::getRelayMode(void) {
-   return _mode;
+   return mode_;
 }
 
 void Relay::setRelayPosition(RelayPosition position) {
    switch(position) {
-      case relayPositionOpen:
-      case relayPositionClosed:
-         _position = position;
-         digitalWrite(_pin, _position);
+      case kRelayPositionOpen:
+      case kRelayPositionClosed:
+         position_ = position;
+         digitalWrite(pin_, position_);
          break;
    }
 }
 
 RelayPosition Relay::getRelayPosition(void) {
-  return _position;
+  return position_;
 }
 
 void Relay::setDutyCyclePercent(double dutyCycle) {
    if ((dutyCycle >= 0.0) && (dutyCycle <= 1.0)) {
-      _dutyCycle = dutyCycle;
+      duty_cycle_ = dutyCycle;
    }
 }
 
 double Relay::getDutyCyclePercent(void) {
-   return _dutyCycle;  
+   return duty_cycle_;  
 }
 
-void Relay::setPeriodInSeconds(uint16_t periodInSeconds) {
-   _periodInSeconds = periodInSeconds;
+void Relay::setPeriodInSeconds(uint16_t period_in_seconds) {
+   period_in_seconds_ = period_in_seconds;
 }
 
 uint16_t Relay::getPeriodInSeconds(void) {
-   return _periodInSeconds;
+   return period_in_seconds_;
 }
 
 void Relay::loop(void) {
    uint32_t newTime = millis();
-   uint32_t offTime = _periodInSeconds * 1000 * _dutyCycle;
+   uint32_t offTime = period_in_seconds_ * 1000 * duty_cycle_;
 
-   if (_mode == relayModeManual) {
+   if (mode_ == kRelayModeManual) {
       return;
    }
 
-   if (newTime < _oldTime) {
-      _periodTime += (UINT32_MAX - _oldTime + newTime);
+   if (newTime < old_time_) {
+      period_time_ += (UINT32_MAX - old_time_ + newTime);
    } else {
-      _periodTime += (newTime - _oldTime);
+      period_time_ += (newTime - old_time_);
    }
-   _oldTime = newTime;
+   old_time_ = newTime;
 
-   if (_periodTime < offTime) {
-      if (_dutyCycle > 0.0) setRelayPosition(relayPositionClosed);
-   } else if (_periodTime >= _periodInSeconds*1000) {
-      _periodTime = 0;
-      if (_dutyCycle > 0.0) setRelayPosition(relayPositionClosed);
+   if (period_time_ < offTime) {
+      if (duty_cycle_ > 0.0) setRelayPosition(kRelayPositionClosed);
+   } else if (period_time_ >= period_in_seconds_*1000) {
+      period_time_ = 0;
+      if (duty_cycle_ > 0.0) setRelayPosition(kRelayPositionClosed);
    } else {
-      setRelayPosition(relayPositionOpen);
+      setRelayPosition(kRelayPositionOpen);
    }
 }
