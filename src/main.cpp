@@ -6,8 +6,9 @@
 #include "fermenterdata.h"
 
 // put function declarations here:
-// int myFunction(int, int);
 
+
+// Initialization of objects and structures
 SimplePhController phControl(30, 31);
 
 // For temp control using Relay.h and ControlLoop.h
@@ -19,6 +20,8 @@ Relay coolerRelay(33, 2);
 // Structs for communication with ESP32
 PvProfile pvProfile;
 
+
+// Anonymous classes from relay.h
 class : public DataSource{
   public:
     double get() {
@@ -130,10 +133,5 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
 }
 
-// put function definitions here:
-// int myFunction(int x, int y) {
-//   return x + y;
-// }
