@@ -147,7 +147,7 @@ void setup() {
   // motor loop
   motor_control_loop.setControlType(ControlLoop::STD);
   motor_control_loop.setOutputLimits(ControlLoop::INNER, 0.0, 999.0);
-  motor_control_loop.setTunings(0.5, 0.05, 0.1);
+  motor_control_loop.setTunings(0.1, 0.12, 0.25);
   motor_control_loop.setOn();  
 
   unsigned long pt = millis();
