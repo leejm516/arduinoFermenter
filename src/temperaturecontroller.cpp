@@ -23,3 +23,7 @@ float TemperatureController::getCurrentTemp() {
 float TemperatureController::getSetTemp() {    
     return set_temp_;
 }
+
+void TemperatureController::setTemp(float sp) {
+    set_temp_ = sp;
+}

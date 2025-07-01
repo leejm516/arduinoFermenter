@@ -22,6 +22,8 @@ class TemperatureController {
         float getCurrentTemp(void);
 
         float getSetTemp(void);
+
+        void setTemp(float);
     private:
         LightweightMAX31865 tempSensor;
         float current_temp_;
