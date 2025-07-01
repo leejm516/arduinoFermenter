@@ -4,6 +4,7 @@
 #include "controlloop.h"
 #include "temperaturecontroller.h"
 #include "fermenterdata.h"
+#include "bldcmotor.h"
 
 // put function declarations here:
 
@@ -11,15 +12,14 @@
 // Initialization of objects and structures
 SimplePhController ph_control(30, 31);
 
+// Structs for communication with ESP32
+PvProfile pv_profile;
+
 // For temp control using Relay.h and ControlLoop.h
 TemperatureController temp_controller(46);
 
 Relay heater_relay(32, 2);
 Relay cooler_relay(33, 2);
-
-// Structs for communication with ESP32
-PvProfile pv_profile;
-
 
 // Anonymous classes to use controlloop.h
 class : public DataSource{
@@ -63,6 +63,34 @@ ControlLoop heaterControlLoop(&temp_data_source, &heater, temp_controller.getSet
 ControlLoop coolerControlLoop(&temp_data_source, &cooler, temp_controller.getSetTemp());
 
 
+// motor control
+const uint8_t signal_pin = 2;
+const uint8_t pwm_pin = 6;
+BldcMotor motor(pwm_pin, signal_pin);
+
+void measureMotorPeriod(void);
+
+class : public DataSource{
+  public:
+    double get() {
+      return motor.getCurrentRpm();
+    }
+} motor_data_source;
+
+class : public RelayUpdate {
+  public:
+    void on() {      
+    }
+    void off() {
+      motor.setOutput(0);      
+    }
+    void update(double res) {
+      motor.setOutput((unsigned int)res);      
+    }
+} motor_relay;
+
+ControlLoop motor_control_loop(&motor_data_source, &motor_relay, 0);
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -74,6 +102,27 @@ void setup() {
 
   temp_controller.init(MAX31865_2WIRE);
 
+  Serial.println("온도센서 초기화...");
+  delay(100);
+
+
+  // Motor control for agitation
+  // pwm_pin: PWM signal for controlling motor driver, D6 pin (arduino mega)
+  // signal_pin: feedback signal from a motor driver
+  pinMode(signal_pin, INPUT_PULLUP);
+  pinMode(pwm_pin, OUTPUT);
+
+  // Modify PWN mode on pin D6 by directly setting registers
+  // Fast PWM, 2 kHz
+  TCCR4A = _BV(COM4A1) | _BV(WGM41);
+  TCCR4B = _BV(WGM43) | _BV(WGM42) | _BV(CS41);
+
+  ICR4 = 999;
+  OCR4A = 0;
+
+  attachInterrupt(digitalPinToInterrupt(signal_pin), measureMotorPeriod, RISING);
+
+  Serial.println("모터 구동 설정...");
   delay(100);
 
   // Temp control
@@ -95,7 +144,13 @@ void setup() {
   heaterControlLoop.setDirectionIncrease(ControlLoop::INNER, 1); // pid 제어에서만 작동함
   heaterControlLoop.setOn();  
 
-  uint32_t pt = millis();
+  // motor loop
+  motor_control_loop.setControlType(ControlLoop::STD);
+  motor_control_loop.setOutputLimits(ControlLoop::INNER, 0.0, 999.0);
+  motor_control_loop.setTunings(0.5, 0.05, 0.1);
+  motor_control_loop.setOn();  
+
+  unsigned long pt = millis();
   
   // Start of the main loop
   while (true) {    
@@ -119,19 +174,45 @@ void setup() {
 
         Serial.print(", 현재 온도:");
         Serial.print(temp_controller.getCurrentTemp());
-        Serial.println("°C");
-    }   
+        Serial.println("°C");       
 
+        Serial.print(", 현재 RPM: ");
+        Serial.println(motor.getCurrentRpm());
+
+    }   
 
     ph_control.detectEvent();
     ph_control.processState(ct);
 
     temp_controller.update();
     coolerControlLoop.Compute();
-    heaterControlLoop.Compute();
+    heaterControlLoop.Compute();    
+
+    motor.calculateRpm();
+    motor_control_loop.Compute();
+
+    if (Serial.available()) {      
+      String my_string = Serial.readStringUntil('\n');
+      Serial.print("RPM이 입력되었습니다: ");
+      Serial.println(my_string);
+      motor_control_loop.setPoint(my_string.toInt());
+    }
   } 
 }
 
 void loop() {
 }
 
+void measureMotorPeriod() {
+  static volatile unsigned long last_update = 0;
+  static volatile unsigned long last_time = 0;
+  unsigned long current_time = micros();
+  if (current_time - last_update >= 1000) {
+    if (last_time > 0) {
+        unsigned long period = current_time - last_time;
+        motor.update(period);
+    }
+    last_update = current_time;
+  }
+  last_time = current_time;
+}
