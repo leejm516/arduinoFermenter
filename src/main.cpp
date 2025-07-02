@@ -68,12 +68,12 @@ const uint8_t signal_pin = 2;
 const uint8_t pwm_pin = 6;
 BldcMotor motor(pwm_pin, signal_pin);
 
-void measureMotorPeriod(void);
+void MeasureMotorPeriod(void);
 
 class : public DataSource{
   public:
     float Get() {
-      return motor.getCurrentRpm();
+      return motor.GetCurrentRpm();
     }
 } motor_data_source;
 
@@ -82,10 +82,10 @@ class : public RelayUpdate {
     void On() {      
     }
     void Off() {
-      motor.setOutput(0);      
+      motor.SetOutput(0);      
     }
     void Update(float res) {
-      motor.setOutput((unsigned int)res);      
+      motor.SetOutput((unsigned int)res);      
     }
 } motor_relay;
 
@@ -97,8 +97,8 @@ void setup() {
   delay(2000);
 
     // pH control
-  ph_control.setOutput();
-  ph_control.setControlOn();
+  ph_control.SetOutput();
+  ph_control.SetControlOn();
 
   temp_controller.init(MAX31865_2WIRE);
 
@@ -120,7 +120,7 @@ void setup() {
   ICR4 = 999;
   OCR4A = 0;
 
-  attachInterrupt(digitalPinToInterrupt(signal_pin), measureMotorPeriod, RISING);
+  attachInterrupt(digitalPinToInterrupt(signal_pin), MeasureMotorPeriod, RISING);
 
   Serial.println("모터 구동 설정...");
   delay(100);
@@ -159,44 +159,46 @@ void setup() {
 
     // Save measured profile into a PvProfile struct
     pv_profile.temp = temp_controller.getCurrentTemp();
-    pv_profile.ph = ph_control.getCurrentPh();
+    pv_profile.ph = ph_control.GetCurrentPh();
 
     // print some data
     if ( ct - pt >= 1000 ) {
         pt += 1000;
         Serial.print("현재 pH: ");
-        Serial.print(ph_control.getCurrentPh());
+        Serial.print(ph_control.GetCurrentPh());
 
         Serial.print(", 현재 state: ");
-        Serial.print(ph_control.getCurrentState());
+        Serial.print(ph_control.GetCurrentState());
 
         Serial.print(", 마지막 event: ");
-        Serial.print(ph_control.getLastEvent());
+        Serial.print(ph_control.GetLastEvent());
 
         Serial.print(", 현재 온도:");
         Serial.print(temp_controller.getCurrentTemp());
         Serial.println("°C");       
 
         Serial.print(", 현재 RPM: ");
-        Serial.println(motor.getCurrentRpm());
+        Serial.println(motor.GetCurrentRpm());
 
     }   
 
-    ph_control.detectEvent();
-    ph_control.processState(ct);
+    ph_control.DetectEvent();
+    ph_control.ProcessState(ct);
 
     temp_controller.update();
     cooler_control_loop.Compute();
     heater_control_loop.Compute();    
 
-    motor.calculateRpm();
+    motor.CalculateRpm();
     motor_control_loop.Compute();
 
     if (Serial.available()) {      
-      String my_string = Serial.readStringUntil('\n');
+      String input_string = Serial.readStringUntil('\n');
+      uint16_t input_rpm = input_string.toInt();
       Serial.print("RPM이 입력되었습니다: ");
-      Serial.println(my_string);
-      motor_control_loop.SetPoint(my_string.toInt());
+      Serial.println(input_string);
+      motor.SetRpm(input_rpm);
+      motor_control_loop.SetPoint(motor.GetSetRpm());
     }
   } 
 }
@@ -204,14 +206,14 @@ void setup() {
 void loop() {
 }
 
-void measureMotorPeriod() {
+void MeasureMotorPeriod() {
   static volatile unsigned long last_update = 0;
   static volatile unsigned long last_time = 0;
   unsigned long current_time = micros();
   if (current_time - last_update >= 2000) {
     if (last_time > 0) {
         unsigned long period = current_time - last_time;
-        motor.update(period);
+        motor.Update(period);
     }
     last_update = current_time;
   }

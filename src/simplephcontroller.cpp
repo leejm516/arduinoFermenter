@@ -2,108 +2,108 @@
 
 typedef uint8_t (SimplePhController::*EventDetector)();
 
-void SimplePhController::setOutput() {
-    pinMode(basepin_, OUTPUT);
-    pinMode(acidpin_, OUTPUT);
+void SimplePhController::SetOutput() {
+    pinMode(base_pin_, OUTPUT);
+    pinMode(acid_pin_, OUTPUT);
 }
 
-void SimplePhController::detectEvent() {
-    if (currentState_ == STATE_IDLE) {
+void SimplePhController::DetectEvent() {
+    if (current_state_ == kStateIdle) {
         return;
     }
 
     // ph는 임시로 테스트용 -> 추후 센서로 교체
-    currentPh_ = 7.0f + 0.1*sin(2*PI*millis()/60/1000);
+    current_ph_ = 7.0f + 0.1*sin(2*PI*millis()/60/1000);
 
-    EventDetector eventDetectors[] = {
-        &SimplePhController::detectTimeoutAcidOn,
-        &SimplePhController::detectTimeoutAcidOff,
-        &SimplePhController::detectTimeoutBaseOn,
-        &SimplePhController::detectTimeoutBaseOff,
-        &SimplePhController::detectPhHigh,
-        &SimplePhController::detectPhLow
+    EventDetector event_detectors[] = {
+        &SimplePhController::DetectTimeoutAcidOn,
+        &SimplePhController::DetectTimeoutAcidOff,
+        &SimplePhController::DetectTimeoutBaseOn,
+        &SimplePhController::DetectTimeoutBaseOff,
+        &SimplePhController::DetectPhHigh,
+        &SimplePhController::DetectPhLow
     };   
 
-    const size_t numDetectors = sizeof(eventDetectors) / sizeof(eventDetectors[0]);
-    for (uint8_t i = 0; i < numDetectors; i++) {
-        uint8_t evt = (this->*eventDetectors[i])();
-        if (evt != EVENT_NONE) {
-            lastEvent_ = evt;
+    const size_t kNumDetectors = sizeof(event_detectors) / sizeof(event_detectors[0]);
+    for (uint8_t i = 0; i < kNumDetectors; i++) {
+        uint8_t evt = (this->*event_detectors[i])();
+        if (evt != kEventNone) {
+            last_event_ = evt;
             return;
         }
     }
-    lastEvent_ = EVENT_NONE;
+    last_event_ = kEventNone;
 }
 
-void SimplePhController::processState(unsigned long ct) {    
-    if (lastEvent_ == EVENT_CONTROL_OFF) {    
-        currentState_ = STATE_IDLE;
-        digitalWrite(basepin_, LOW);
-        digitalWrite(acidpin_, LOW);    
+void SimplePhController::ProcessState(unsigned long ct) {    
+    if (last_event_ == kEventControlOff) {    
+        current_state_ = kStateIdle;
+        digitalWrite(base_pin_, LOW);
+        digitalWrite(acid_pin_, LOW);    
         return;
     }
 
-    switch (currentState_) {
-        case STATE_IDLE:
-            if (lastEvent_ == EVENT_CONTROL_ON) {
-                currentState_ = STATE_RUNNING;                
+    switch (current_state_) {
+        case kStateIdle:
+            if (last_event_ == kEventControlOn) {
+                current_state_ = kStateRunning;                
             }
             break;
-        case STATE_RUNNING:
-            switch (lastEvent_) {        
-                case EVENT_PH_HIGH:
-                    currentState_ = STATE_ACID_ON;
+        case kStateRunning:
+            switch (last_event_) {        
+                case kEventPhHigh:
+                    current_state_ = kStateAcidOn;
                     Serial.println("산 투입을 시작합니다.");
-                    digitalWrite(acidpin_, HIGH);
-                    lastOnOffTime_ = ct;
+                    digitalWrite(acid_pin_, HIGH);
+                    last_on_off_time_ = ct;
                     break;
-                case EVENT_PH_LOW:
-                    currentState_ = STATE_BASE_ON;
+                case kEventPhLow:
+                    current_state_ = kStateAcidOff;
                     Serial.println("염기 투입을 시작합니다.");
-                    digitalWrite(basepin_, HIGH);
-                    lastOnOffTime_ = ct;
+                    digitalWrite(base_pin_, HIGH);
+                    last_on_off_time_ = ct;
                     break;
                 default:
                     break;
             }
             break;
-        case STATE_BASE_ON:
-            switch (lastEvent_) {        
-                case EVENT_TIMEOUT:
-                    currentState_ = STATE_BASE_OFF;
-                    digitalWrite(basepin_, LOW);
-                    lastOnOffTime_ = ct;
+        case kStateBaseOn:
+            switch (last_event_) {        
+                case kEventTimeout:
+                    current_state_ = kStateBaseOff;
+                    digitalWrite(base_pin_, LOW);
+                    last_on_off_time_ = ct;
                     break;
                 default:
                 break;
             }      
             break;
-        case STATE_BASE_OFF:
-            switch (lastEvent_) {        
-                case EVENT_TIMEOUT:
-                    currentState_ = STATE_RUNNING;
-                    lastOnOffTime_ = ct;
+        case kStateBaseOff:
+            switch (last_event_) {        
+                case kEventTimeout:
+                    current_state_ = kStateRunning;
+                    last_on_off_time_ = ct;
                     break;
                 default:
                 break;
             }      
             break;
-        case STATE_ACID_ON:
-            switch (lastEvent_) {        
-                case EVENT_TIMEOUT:
-                    currentState_ = STATE_ACID_OFF;
-                    digitalWrite(acidpin_, LOW);
-                    lastOnOffTime_ = ct;
+        case kStateAcidOn:
+            switch (last_event_) {        
+                case kEventTimeout:
+                    current_state_ = kStateAcidOff;
+                    digitalWrite(acid_pin_, LOW);
+                    last_on_off_time_ = ct;
                     break;
                 default:
                     break;
             }        
             break;
-        case STATE_ACID_OFF:
-            switch (lastEvent_) {        
-                case EVENT_TIMEOUT:
-                    currentState_ = STATE_RUNNING;
-                    lastOnOffTime_ = ct;
+        case kStateAcidOff:
+            switch (last_event_) {        
+                case kEventTimeout:
+                    current_state_ = kStateRunning;
+                    last_on_off_time_ = ct;
                     break;
                 default:
                 break;
@@ -117,38 +117,38 @@ void SimplePhController::processState(unsigned long ct) {
 
 
 // timeout 함수는 나중에 하나로 통합 가능할듯
-uint8_t SimplePhController::detectTimeoutAcidOn() {
-    return (currentState_ == STATE_ACID_ON && millis() - lastOnOffTime_ >= onTime_) ? EVENT_TIMEOUT : EVENT_NONE;
+uint8_t SimplePhController::DetectTimeoutAcidOn() {
+    return (current_state_ == kStateAcidOff && millis() - last_on_off_time_ >= on_time_) ? kEventTimeout : kEventNone;
 }
 
-uint8_t SimplePhController::detectTimeoutAcidOff() {
-    return (currentState_ == STATE_ACID_OFF && millis() - lastOnOffTime_ >= onTime_) ? EVENT_TIMEOUT : EVENT_NONE;
+uint8_t SimplePhController::DetectTimeoutAcidOff() {
+    return (current_state_ == kStateAcidOff && millis() - last_on_off_time_ >= on_time_) ? kEventTimeout : kEventNone;
 }
 
-uint8_t SimplePhController::detectTimeoutBaseOn() {
-    return (currentState_ == STATE_BASE_ON && millis() - lastOnOffTime_ >= onTime_) ? EVENT_TIMEOUT : EVENT_NONE;
+uint8_t SimplePhController::DetectTimeoutBaseOn() {
+    return (current_state_ == kStateBaseOn && millis() - last_on_off_time_ >= on_time_) ? kEventTimeout : kEventNone;
 }
 
-uint8_t SimplePhController::detectTimeoutBaseOff() {
-    return (currentState_ == STATE_BASE_OFF && millis() - lastOnOffTime_ >= onTime_) ? EVENT_TIMEOUT : EVENT_NONE;
+uint8_t SimplePhController::DetectTimeoutBaseOff() {
+    return (current_state_ == kStateBaseOff && millis() - last_on_off_time_ >= on_time_) ? kEventTimeout : kEventNone;
 }
 
 
-uint8_t SimplePhController::detectPhHigh() {
-    return (currentPh_ > phUpper_) ? EVENT_PH_HIGH : EVENT_NONE;
+uint8_t SimplePhController::DetectPhHigh() {
+    return (current_ph_ > ph_upper_) ? kEventPhHigh : kEventNone;
 }
 
-uint8_t SimplePhController::detectPhLow() {
-    return (currentPh_ < phLower_) ? EVENT_PH_LOW : EVENT_NONE;
+uint8_t SimplePhController::DetectPhLow() {
+    return (current_ph_ < ph_lower_) ? kEventPhLow : kEventNone;
 }
 
-void SimplePhController::setOnTime(float t) {
-    onTime_ = (uint8_t)(t*1000);
+void SimplePhController::SetOnTime(float t) {
+    on_time_ = (uint8_t)(t*1000);
 }
-void SimplePhController::setOffTime(float t) {
-    offTime_ = (uint8_t)(t*1000);
+void SimplePhController::SetOffTime(float t) {
+    off_time_ = (uint8_t)(t*1000);
 }
 
-void SimplePhController::setControlOn() {
-    currentState_ = STATE_RUNNING;
+void SimplePhController::SetControlOn() {
+    current_state_ = kStateRunning;
 }

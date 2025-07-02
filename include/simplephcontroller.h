@@ -4,74 +4,74 @@
 
 class SimplePhController {
     public:
-        SimplePhController(uint8_t pin1, uint8_t pin2, unsigned long a = 5000, unsigned long b = 5000) {
-            basepin_ = pin1;
-            acidpin_ = pin2;
-            onTime_ = a;
-            offTime_ = b;
-            currentState_ = STATE_IDLE;
-            lastEvent_ = EVENT_NONE;
-            currentPh_ = 0.0f;
-            phLower_ = 6.95f;
-            phUpper_ = 7.05f;
+        SimplePhController(uint8_t pin_1, uint8_t pin_2, unsigned long a = 5000, unsigned long b = 5000) {
+            base_pin_ = pin_1;
+            acid_pin_ = pin_2;
+            on_time_ = a;
+            off_time_ = b;
+            current_state_ = kStateIdle;
+            last_event_ = kEventNone;
+            current_ph_ = 0.0f;
+            ph_lower_ = 6.95f;
+            ph_upper_ = 7.05f;
         }
 
         enum State {
-            STATE_IDLE,
-            STATE_RUNNING,
-            STATE_BASE_ON,
-            STATE_BASE_OFF,
-            STATE_ACID_ON,
-            STATE_ACID_OFF
+            kStateIdle,
+            kStateRunning,
+            kStateBaseOn,
+            kStateBaseOff,
+            kStateAcidOn,
+            kStateAcidOff
         };
 
         enum Event {
-            EVENT_NONE,         // 아무 일도 일어나지 않았을 때
-            EVENT_CONTROL_ON,
-            EVENT_CONTROL_OFF,
-            EVENT_PH_HIGH,
-            EVENT_PH_LOW,
-            EVENT_TIMEOUT
+            kEventNone,         // 아무 일도 일어나지 않았을 때
+            kEventControlOn,
+            kEventControlOff,
+            kEventPhHigh,
+            kEventPhLow,
+            kEventTimeout
         };
 
 
-        void setOutput(void);       
+        void SetOutput(void);       
         
-        void setControlOn(void);
+        void SetControlOn(void);
 
-        void detectEvent(void);
+        void DetectEvent(void);
         
         // 이벤트 관련 메소드
-        uint8_t detectTimeoutAcidOn(void);
-        uint8_t detectTimeoutAcidOff(void);
-        uint8_t detectTimeoutBaseOn(void);
-        uint8_t detectTimeoutBaseOff(void);
-        uint8_t detectPhHigh(void);
-        uint8_t detectPhLow(void);
+        uint8_t DetectTimeoutAcidOn(void);
+        uint8_t DetectTimeoutAcidOff(void);
+        uint8_t DetectTimeoutBaseOn(void);
+        uint8_t DetectTimeoutBaseOff(void);
+        uint8_t DetectPhHigh(void);
+        uint8_t DetectPhLow(void);
         
 
         // On/Off time 설정
-        void setOnTime(float);
-        void setOffTime(float);
+        void SetOnTime(float);
+        void SetOffTime(float);
 
-        void processState(unsigned long);
+        void ProcessState(unsigned long);
         
         // 멤버 변수값 출력 함수
-        float getCurrentPh() { return currentPh_; };
-        uint8_t getLastEvent() { return lastEvent_; };
-        uint8_t getCurrentState() { return currentState_; };
+        float GetCurrentPh() { return current_ph_; };
+        uint8_t GetLastEvent() { return last_event_; };
+        uint8_t GetCurrentState() { return current_state_; };
 
     private:
-        uint8_t currentState_;
-        uint8_t lastEvent_;
-        unsigned long lastOnOffTime_;
-        uint8_t basepin_;
-        uint8_t acidpin_;
-        unsigned long onTime_;
-        unsigned long offTime_;
-        float phUpper_;
-        float phLower_;
-        float currentPh_;
+        uint8_t current_state_;
+        uint8_t last_event_;
+        unsigned long last_on_off_time_;
+        uint8_t base_pin_;
+        uint8_t acid_pin_;
+        unsigned long on_time_;
+        unsigned long off_time_;
+        float ph_upper_;
+        float ph_lower_;
+        float current_ph_;
 };
 
 

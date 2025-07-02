@@ -29,23 +29,23 @@ class BldcMotor {
                                                          periods_{0,0,0,0,0} {
         }
 
-        void update(unsigned long);
+        void Update(unsigned long);
 
-        unsigned int getCurrentRpm(void);
+        unsigned int GetCurrentRpm(void);
 
-        unsigned int getSetRpm(void);
+        unsigned int GetSetRpm(void);
 
-        void setRpm(unsigned int);
+        void SetRpm(unsigned int);
 
-        void setOutput(unsigned int);
+        void SetOutput(unsigned int);
 
-        unsigned long getLastTime(void);
+        unsigned long GetLastTime(void);
 
-        void setLastTime(unsigned long);
+        void SetLastTime(unsigned long);
 
-        unsigned long calculateMeanPeriod(void);
+        unsigned long CalculateMeanPeriod(void);
 
-        void calculateRpm(void);
+        void CalculateRpm(void);
 
     private:
         uint8_t pwm_pin_;
