@@ -5,10 +5,10 @@ void BldcMotor::update(unsigned long period) {
     // 엔코더가 아니기 때문에 단일 밸류는 fluctuation이 심함.
     // 연습시에는 따로 ISR에 배열 부분을 구현하였지만 loop 한 cycle 돌때만 period를 계산해도 충분하지 않을까 하는 생각.
     cli();    
-    for (uint8_t i = 0; i < 4; i++ ) {
+    for (uint8_t i = 0; i < 9; i++ ) {
         periods_[i] = periods_[i+1];
     }
-    periods_[4] = period;
+    periods_[9] = period;
     sei();
 }
 
@@ -56,11 +56,11 @@ void BldcMotor::setLastTime(unsigned long last_time) {
 unsigned long BldcMotor::calculateMeanPeriod() {    
     unsigned long sum_period = 0;
     cli();
-    for (uint8_t i = 0; i < 5; i++) {
+    for (uint8_t i = 0; i < 10; i++) {
         sum_period += periods_[i];
     }
     sei();
-    return (unsigned long)(sum_period / 5 + 0.5);
+    return (unsigned long)(sum_period / 10 + 0.5);
 }
 
 void BldcMotor::calculateRpm() {

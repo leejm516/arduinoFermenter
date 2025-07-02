@@ -57,7 +57,7 @@ class BldcMotor {
         float ki_;
         float kd_;
         volatile unsigned long last_time_; // last time for period aquisition
-        volatile unsigned long periods_[5];
+        volatile unsigned long periods_[10];
 };
 
 #endif
