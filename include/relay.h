@@ -25,20 +25,20 @@ typedef enum {
 class Relay {
   public:
     Relay(uint8_t pin, uint16_t period_in_seconds_);
-    void setRelayMode(RelayMode mode);
-    RelayMode getRelayMode(void);
-    void setRelayPosition(RelayPosition position);
-    RelayPosition getRelayPosition(void);
-    void setDutyCyclePercent(double dutyCycle);
-    double getDutyCyclePercent(void);
-    void setPeriodInSeconds(uint16_t period_in_seconds_);
-    uint16_t getPeriodInSeconds(void);
-    void loop(void);
+    void SetRelayMode(RelayMode mode);
+    RelayMode GetRelayMode(void);
+    void SetRelayPosition(RelayPosition position);
+    RelayPosition GetRelayPosition(void);
+    void SetDutyCyclePercent(float dutyCycle);
+    float GetDutyCyclePercent(void);
+    void SetPeriodInSeconds(uint16_t period_in_seconds_);
+    uint16_t GetPeriodInSeconds(void);
+    void Loop(void);
 
   private:
     uint8_t pin_;
     uint16_t period_in_seconds_;
-    double duty_cycle_;
+    float duty_cycle_;
     RelayMode mode_;
     RelayPosition position_;
     uint32_t period_time_;

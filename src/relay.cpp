@@ -18,11 +18,11 @@ Relay::Relay(uint8_t pin, uint16_t period_in_seconds): pin_(pin), period_in_seco
     position_ = kRelayPositionOpen;
 }
 
-void Relay::setRelayMode(RelayMode mode) {
+void Relay::SetRelayMode(RelayMode mode) {
    switch (mode) {
       case kRelayModeManual:
          mode_ = mode;
-         setRelayPosition(kRelayPositionOpen);
+         SetRelayPosition(kRelayPositionOpen);
          break;
       case kRelayModeAutomatic:
          if (mode_ != kRelayModeAutomatic) {
@@ -34,11 +34,11 @@ void Relay::setRelayMode(RelayMode mode) {
    }
 }
 
-RelayMode Relay::getRelayMode(void) {
+RelayMode Relay::GetRelayMode(void) {
    return mode_;
 }
 
-void Relay::setRelayPosition(RelayPosition position) {
+void Relay::SetRelayPosition(RelayPosition position) {
    switch(position) {
       case kRelayPositionOpen:
       case kRelayPositionClosed:
@@ -48,29 +48,29 @@ void Relay::setRelayPosition(RelayPosition position) {
    }
 }
 
-RelayPosition Relay::getRelayPosition(void) {
+RelayPosition Relay::GetRelayPosition(void) {
   return position_;
 }
 
-void Relay::setDutyCyclePercent(double dutyCycle) {
-   if ((dutyCycle >= 0.0) && (dutyCycle <= 1.0)) {
-      duty_cycle_ = dutyCycle;
+void Relay::SetDutyCyclePercent(float duty_cycle) {
+   if ((duty_cycle >= 0.0) && (duty_cycle <= 1.0)) {
+      duty_cycle_ = duty_cycle;
    }
 }
 
-double Relay::getDutyCyclePercent(void) {
+float Relay::GetDutyCyclePercent(void) {
    return duty_cycle_;  
 }
 
-void Relay::setPeriodInSeconds(uint16_t period_in_seconds) {
+void Relay::SetPeriodInSeconds(uint16_t period_in_seconds) {
    period_in_seconds_ = period_in_seconds;
 }
 
-uint16_t Relay::getPeriodInSeconds(void) {
+uint16_t Relay::GetPeriodInSeconds(void) {
    return period_in_seconds_;
 }
 
-void Relay::loop(void) {
+void Relay::Loop(void) {
    uint32_t newTime = millis();
    uint32_t offTime = period_in_seconds_ * 1000 * duty_cycle_;
 
@@ -86,11 +86,11 @@ void Relay::loop(void) {
    old_time_ = newTime;
 
    if (period_time_ < offTime) {
-      if (duty_cycle_ > 0.0) setRelayPosition(kRelayPositionClosed);
+      if (duty_cycle_ > 0.0) SetRelayPosition(kRelayPositionClosed);
    } else if (period_time_ >= period_in_seconds_*1000) {
       period_time_ = 0;
-      if (duty_cycle_ > 0.0) setRelayPosition(kRelayPositionClosed);
+      if (duty_cycle_ > 0.0) SetRelayPosition(kRelayPositionClosed);
    } else {
-      setRelayPosition(kRelayPositionOpen);
+      SetRelayPosition(kRelayPositionOpen);
    }
 }
