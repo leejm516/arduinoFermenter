@@ -32,30 +32,30 @@ class : public DataSource{
 class : public RelayUpdate {
   public:
     void On() {
-      heater_relay.setRelayMode(kRelayModeAutomatic);
+      heater_relay.SetRelayMode(kRelayModeAutomatic);
     }
     void Off() {
-      heater_relay.setRelayMode(kRelayModeManual);
-      heater_relay.setDutyCyclePercent(0.0);
+      heater_relay.SetRelayMode(kRelayModeManual);
+      heater_relay.SetDutyCyclePercent(0.0);
     }
     void Update(float res) {
-      heater_relay.setDutyCyclePercent(res);
-      heater_relay.loop();
+      heater_relay.SetDutyCyclePercent(res);
+      heater_relay.Loop();
     }
 } heater;
 
 class : public RelayUpdate {
   public:
     void On() {
-      cooler_relay.setRelayMode(kRelayModeAutomatic);
+      cooler_relay.SetRelayMode(kRelayModeAutomatic);
     }
     void Off() {
-      cooler_relay.setRelayMode(kRelayModeManual);
-      cooler_relay.setDutyCyclePercent(0.0);
+      cooler_relay.SetRelayMode(kRelayModeManual);
+      cooler_relay.SetDutyCyclePercent(0.0);
     }
     void Update(float res) {
-      cooler_relay.setDutyCyclePercent(res);
-      cooler_relay.loop();
+      cooler_relay.SetDutyCyclePercent(res);
+      cooler_relay.Loop();
     }
 } cooler;
 
@@ -147,8 +147,7 @@ void setup() {
   // motor loop
   motor_control_loop.SetControlType(ControlLoop::kStd);
   motor_control_loop.SetOutputLimits(ControlLoop::kInner, 0.0, 999.0);
-  motor_control_loop.SetTunings(0.5, 0.5, 0.05700
-  );
+  motor_control_loop.SetTunings(0.5, 0.5, 0.075);
   motor_control_loop.SetSampleTime(250);
   motor_control_loop.SetOn();  
 
