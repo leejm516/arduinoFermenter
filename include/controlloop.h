@@ -6,14 +6,14 @@
 
 class RelayUpdate {
   public:
-    virtual void on() = 0;
-    virtual void off() = 0;
-    virtual void update(double) = 0;
+    virtual void On() = 0;
+    virtual void Off() = 0;
+    virtual void Update(float) = 0;
 };
 
 class DataSource {
   public:
-    virtual double get() = 0;
+    virtual float Get() = 0;
 };
 
 
@@ -21,103 +21,103 @@ class DataSource {
 class ControlLoop {
 
   public:
-    ControlLoop(DataSource*, DataSource*, RelayUpdate*, double);
-    ControlLoop(DataSource* data, RelayUpdate* update, double setpoint) : ControlLoop(NULL, data, update, setpoint) {;};
+    ControlLoop(DataSource*, DataSource*, RelayUpdate*, float);
+    ControlLoop(DataSource* data, RelayUpdate* update, float setpoint) : ControlLoop(NULL, data, update, setpoint) {;};
 
 
-    static const bool PID_DEBUG = true;
+    static const bool kPid_Debug = true;
 
-    static const int INNER  = 0;
-    static const int OUTER = 1;
+    static const int kInner  = 0;
+    static const int kOuter = 1;
 
-    static const int ONOFF = 10;
-    static const int STD = 11;
-    static const int CASCADE = 12;
+    static const int kOnOff = 10;
+    static const int kStd = 11;
+    static const int kCascade = 12;
 
     bool Compute();
 
-    void setPoint(double);
-    double getSetPoint() { return _setpoint; }
-    double getInnerSetPoint();
+    void SetPoint(float);
+    float GetSetPoint() { return set_point_; }
+    float GetInnerSetPoint();
 
 
 
-    void enableBangBang() { _bangBangOn = true; }
-    void disableBangBang() { _bangBangOn = false; }
-    bool isBangBangOn() { return _bangBangOn;  }
-    void setBangBangRange(double x) { setBangBangRange(-x, x); }
-    void setBangBangRange(double, double);
-    double getBangBangLower() { return _bangBangLower; }
-    double getBangBangUpper() { return _bangBangUpper;}
+    void EnableBangBang() { bangbang_on_ = true; }
+    void DisableBangBang() { bangbang_on_ = false; }
+    bool IsBangBangOn() { return bangbang_on_;  }
+    void SetBangBangRange(float x) { SetBangBangRange(-x, x); }
+    void SetBangBangRange(float, float);
+    float GetBangBangLower() { return bangbang_lower_; }
+    float GetBangBangUpper() { return bangbang_upper_;}
 
-    void setControlType(int);
-    bool isControlOnOff() { return this->_ControlState == ControlLoop::ONOFF; }
-    bool isControlStandardPID() { return this->_ControlState == ControlLoop::STD; }
-    bool isControlCascadePID() { return this->_ControlState == ControlLoop::CASCADE; }
-    int getControlType(){ return this->_ControlState; }
+    void SetControlType(int);
+    bool IsControlOnOff() { return this->control_state_ == ControlLoop::kOnOff; }
+    bool IsControlStandardPID() { return this->control_state_ == ControlLoop::kStd; }
+    bool IsControlCascadePID() { return this->control_state_ == ControlLoop::kCascade; }
+    int GetControlType(){ return this->control_state_; }
 
 
-    void setSampleTime(int);
-    void setOuterSampleFactor(int);
+    void SetSampleTime(unsigned int);
+    void SetOuterSampleFactor(unsigned int);
 
-    bool isOn() { return _isOn; }
-    void setOn() { setOnOff(true); }
-    void setOff() { setOnOff(false); }
+    bool IsOn() { return is_on_; }
+    void SetOn() { SetOnOff(true); }
+    void SetOff() { SetOnOff(false); }
 
-    void setOutputLimits(int, double, double);
-    void setDirectionIncrease(int, bool);
-    bool getDirectionIncrease(int);
+    void SetOutputLimits(int, float, float);
+    void SetDirectionIncrease(int, bool);
+    bool GetDirectionIncrease(int);
 
-    void setTunings(double p, double i, double d) { setTunings(ControlLoop::INNER, p, i, d);}
-    void setTunings(int, double, double, double);
-    double getKp(int);
-    double getKi(int);
-    double getKd(int);
+    void SetTunings(float p, float i, float d) { SetTunings(ControlLoop::kInner, p, i, d);}
+    void SetTunings(int, float, float, float);
+    float GetKp(int);
+    float GetKi(int);
+    float GetKd(int);
 
 
   protected:
 
-    void updateInputs();
+    void UpdateInputs();
 
-    void setOnOff(bool);
+    void SetOnOff(bool);
 
   private:
 
-    double outerIn = 0.0;
-    double outerOutInnerSet = 0.0;
-    double outerSet = 0.0;
+    float outer_in_ = 0.0;
+    float outer_out_inner_set_ = 0.0;
+    float outer_set_ = 0.0;
     // Setpoint is shared with inner Out
 
-    double innerIn = 0.0;
-    double innerOut = 0.0;
+    float inner_in_ = 0.0;
+    float inner_out_ = 0.0;
 
-    double _outMin = 0.0;
-    double _outMax = 1.0;
-
-
-    PID outer;
-    PID inner;
-
-    PID *getController(int c);
-
-    long _sampleTimeMS = 2500;
-    long _sampleFactor = 4; // Recommended to be 3-5 times
-
-    int _ControlState = STD;
-
-    double _setpoint;
-    double _setpointLower;
-    double _setpointUpper;
-
-    bool _isOn = false;
-    bool _bangBangOn = false;
-    double _bangBangLower = 0.0;
-    double _bangBangUpper = 0.0;
+    float out_min_ = 0.0;
+    float out_max_ = 1.0;
 
 
-    DataSource *_innerDataSource = NULL;
-    DataSource *_outerDataSource = NULL;
-    RelayUpdate *_relay = NULL;
+    PID pid_outer_;
+    PID pid_inner_;
+
+    PID *GetController_(int c);
+
+    unsigned long sample_time_ms_ = 2500;
+    unsigned int sample_factor_ = 4; // Recommended to be 3-5 times
+
+    unsigned int control_state_ = kStd;
+
+    float set_point_;
+    float set_point_lower_;
+    float set_point_upper_;
+
+    bool is_on_ = false;
+    bool bangbang_on_ = false;
+    float bangbang_lower_ = 0.0;
+    float bangbang_upper_ = 0.0;
+
+
+    DataSource *inner_data_source_ = NULL;
+    DataSource *outer_data_source_ = NULL;
+    RelayUpdate *relay_ = NULL;
 
 };
 

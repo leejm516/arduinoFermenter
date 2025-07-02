@@ -1,65 +1,65 @@
 #include "controlloop.h"
 
-//#define _SHOW_COMPUTE_TRACE(...) Serial.printf(__VA_ARGS__ )
+//#define _SHOW_COMPUTE_TRACE(...) Serial.println(__VA_ARGS__ )
 #define _SHOW_COMPUTE_TRACE(...) 
 
 
 
-ControlLoop::ControlLoop(DataSource* inDS, DataSource* otDS, RelayUpdate* r, double sp) :
-  outer(&outerIn, &outerOutInnerSet, &outerSet, 1.0, 0.0, 0.0, DIRECT),
-  inner(&innerIn, &innerOut, &outerOutInnerSet, 1.0, 0.0, 0.0, DIRECT) {
+ControlLoop::ControlLoop(DataSource* in_ds, DataSource* ot_ds, RelayUpdate* r, float sp) :
+  pid_outer_(&outer_in_, &outer_out_inner_set_, &outer_set_, 1.0, 0.0, 0.0, DIRECT),
+  pid_inner_(&inner_in_, &inner_out_, &outer_out_inner_set_, 1.0, 0.0, 0.0, DIRECT) {
 
-  _innerDataSource = inDS;
-  _outerDataSource = otDS;
-  _relay = r;
-  _setpoint = sp;
+  inner_data_source_ = in_ds;
+  outer_data_source_ = ot_ds;
+  relay_ = r;
+  set_point_ = sp;
 
-  _outMin = 0.0;
-  _outMax = 1.0;
+  out_min_ = 0.0;
+  out_max_ = 1.0;
 
-  inner.SetOutputLimits(_outMin, _outMax);
-  outer.SetOutputLimits(0.0, 90.0);
+  pid_inner_.SetOutputLimits(out_min_, out_max_);
+  pid_outer_.SetOutputLimits(0.0, 90.0);
 
-  _isOn = false;
-  inner.SetMode(MANUAL);
-  outer.SetMode(MANUAL);
+  is_on_ = false;
+  pid_inner_.SetMode(MANUAL);
+  pid_outer_.SetMode(MANUAL);
 
-  inner.SetSampleTime(_sampleTimeMS);
-  outer.SetSampleTime(_sampleTimeMS*_sampleFactor);
+  pid_inner_.SetSampleTime(sample_time_ms_);
+  pid_outer_.SetSampleTime(sample_time_ms_*sample_factor_);
 
-  setControlType(STD);
-  updateInputs();
+  SetControlType(kStd);
+  UpdateInputs();
 }
 
 
-PID* ControlLoop::getController(int c) {
-  if ( c == ControlLoop::OUTER ) {
-    return &outer;
+PID* ControlLoop::GetController_(int c) {
+  if ( c == ControlLoop::kOuter ) {
+    return &pid_outer_;
   }
-  return &inner;
+  return &pid_inner_;
 }
 
-void ControlLoop::updateInputs() {
-  switch (this->_ControlState) {
-  case ControlLoop::CASCADE:
-    this->outerIn = _outerDataSource->get();
-    // Handle case if CASCADE is set without a second data source. 
-    if (_innerDataSource == NULL) {
-      this->innerIn = this->outerIn;
-    } else {
-      this->innerIn = _innerDataSource->get();
-    }
-    break;
-    
-  case ControlLoop::STD:
-  case ControlLoop::ONOFF:
-    this->outerIn = _outerDataSource->get();
-    this->innerIn = this->outerIn;
-    break;
+void ControlLoop::UpdateInputs() {
+  switch (this->control_state_) {
+    case ControlLoop::kCascade:
+      this->outer_in_ = outer_data_source_->Get();
+      // Handle case if kCascade is set without a second data source. 
+      if (inner_data_source_ == NULL) {
+        this->inner_in_ = this->outer_in_;
+      } else {
+        this->inner_in_ = inner_data_source_->Get();
+      }
+      break;
+      
+    case ControlLoop::kStd:
+    case ControlLoop::kOnOff:
+      this->outer_in_ = outer_data_source_->Get();
+      this->inner_in_ = this->outer_in_;
+      break;
 
-  default:
-    Serial.print(F("ERROR: unknown control type "));
-    Serial.println(this->_ControlState);    
+    default:
+      Serial.print(F("ERROR: unknown control type "));
+      Serial.println(this->control_state_);    
   }
 }
 
@@ -67,31 +67,31 @@ bool ControlLoop::Compute() {
 
   bool updated = false;
 
-  updateInputs();
+  UpdateInputs();
 
-  _SHOW_COMPUTE_TRACE("Control: %i bb: %i sp: %f, %f %f ", this->_ControlState, _bangBangOn, _setpoint, _setpointLower, _setpointUpper);
+  _SHOW_COMPUTE_TRACE("Control: %i bb: %i sp: %f, %f %f ", this->control_state_, bangbang_on_, set_point_, set_point_lower_, set_point_upper_);
 
   // Jump out as off.
-  if (! _isOn) {
+  if (! is_on_) {
     _SHOW_COMPUTE_TRACE("not on, returning\n");
     return false;
   }
 
 
-  if ( this->_ControlState == ControlLoop::ONOFF ) {
+  if ( this->control_state_ == ControlLoop::kOnOff ) {
     _SHOW_COMPUTE_TRACE("onoff ");
 
-    if ( _bangBangOn ) {
+    if ( bangbang_on_ ) {
       _SHOW_COMPUTE_TRACE("bb ");
       updated = true;
 
-      if ( innerIn < _setpointLower ) {
+      if ( inner_in_ < set_point_lower_ ) {
         _SHOW_COMPUTE_TRACE("max ");
-        innerOut = this->inner.GetDirection() ? _outMin : _outMax;
+        inner_out_ = this->pid_inner_.GetDirection() ? out_min_ : out_max_;
 
-      } else if ( innerIn > _setpointUpper ) {
+      } else if ( inner_in_ > set_point_upper_ ) {
         _SHOW_COMPUTE_TRACE("min ");
-        innerOut = this->inner.GetDirection() ? _outMax : _outMin;
+        inner_out_ = this->pid_inner_.GetDirection() ? out_max_ : out_min_;
 
       } else {
         _SHOW_COMPUTE_TRACE("n/a ");
@@ -108,13 +108,13 @@ bool ControlLoop::Compute() {
       _SHOW_COMPUTE_TRACE("!bb ");
 
       updated = true;
-      if ( innerIn < _setpoint) {
+      if ( inner_in_ < set_point_ ) {
         _SHOW_COMPUTE_TRACE("max ");
-        innerOut = _outMax;
+        inner_out_ = out_max_;
 
-      } else if ( innerIn > _setpoint ) {
+      } else if ( inner_in_ > set_point_ ) {
         _SHOW_COMPUTE_TRACE("min ");
-        innerOut = _outMin;
+        inner_out_ = out_min_;
 
       } else {
         // State is equal, keep doing previous.
@@ -126,165 +126,165 @@ bool ControlLoop::Compute() {
 
 
 
-  } else if ( this->_ControlState == ControlLoop::STD ) {
+  } else if ( this->control_state_ == ControlLoop::kStd ) {
     _SHOW_COMPUTE_TRACE("std ");
 
-    if ( _bangBangOn && innerIn < _setpointLower ) {
+    if ( bangbang_on_ && inner_in_ < set_point_lower_ ) {
       _SHOW_COMPUTE_TRACE("bb/low ");
       updated = true;
-      innerOut = this->inner.GetDirection() ? _outMin : _outMax;
+      inner_out_ = this->pid_inner_.GetDirection() ? out_min_ : out_max_;
 
-    } else if ( _bangBangOn && innerIn > _setpointUpper ) {
+    } else if ( bangbang_on_ && inner_in_ > set_point_upper_ ) {
       _SHOW_COMPUTE_TRACE("bb/high ");
       updated = true;
-      innerOut = this->inner.GetDirection() ? _outMax : _outMin;
+      inner_out_ = this->pid_inner_.GetDirection() ? out_max_ : out_min_;
 
     } else {
       _SHOW_COMPUTE_TRACE("compute ");
-      updated = inner.Compute();
+      updated = pid_inner_.Compute();
     }
 
-  } else if ( this->_ControlState == ControlLoop::CASCADE ) {
+  } else if ( this->control_state_ == ControlLoop::kCascade ) {
     _SHOW_COMPUTE_TRACE("cas ");
-    if ( _bangBangOn && innerIn < _setpointLower ) {
+    if ( bangbang_on_ && inner_in_ < set_point_lower_ ) {
       _SHOW_COMPUTE_TRACE("bb/low ");
       updated = true;
-      innerOut = _outMax;
+      inner_out_ = out_max_;
 
-    } else if ( _bangBangOn && innerIn > _setpointUpper ) {
+    } else if ( bangbang_on_ && inner_in_ > set_point_upper_ ) {
       _SHOW_COMPUTE_TRACE("bb/high ");
       updated = true;
-      innerOut = _outMin;
+      inner_out_ = out_min_;
 
     } else {
       _SHOW_COMPUTE_TRACE("compute ");
-      bool o = outer.Compute();
-      bool i = inner.Compute();
+      bool o = pid_outer_.Compute();
+      bool i = pid_inner_.Compute();
       updated = i || o;
     }
 
   } else {
     Serial.print(F("ERROR: unknown control type "));
-    Serial.println(this->_ControlState);
+    Serial.println(this->control_state_);
     updated = false;
 
   }
 
   if ( updated ) {
-    _relay->update(innerOut);
+    relay_->Update(inner_out_);
   }
 
   _SHOW_COMPUTE_TRACE("upd rt: %i\n", updated);
   return updated;
 }
 
-void ControlLoop::setControlType(int ct) {
+void ControlLoop::SetControlType(int ct) {
 
-  this->_ControlState = ct;
+  this->control_state_ = ct;
 
-  if ( this->_ControlState == ControlLoop::ONOFF ) {
-    inner.SetMode(MANUAL);
-    outer.SetMode(MANUAL);
+  if ( this->control_state_ == ControlLoop::kOnOff ) {
+    pid_inner_.SetMode(MANUAL);
+    pid_outer_.SetMode(MANUAL);
 
-  } else if ( this->_ControlState == ControlLoop::STD ) {
-    inner.SetMode(AUTOMATIC);
-    outer.SetMode(MANUAL);
-    outerOutInnerSet = _setpoint;
+  } else if ( this->control_state_ == ControlLoop::kStd ) {
+    pid_inner_.SetMode(AUTOMATIC);
+    pid_outer_.SetMode(MANUAL);
+    outer_out_inner_set_ = set_point_;
 
-  } else if ( this->_ControlState == ControlLoop::CASCADE ) {
-    inner.SetMode(AUTOMATIC);
-    outer.SetMode(AUTOMATIC);
-    outerSet = _setpoint;
-    outerOutInnerSet = _setpoint;
+  } else if ( this->control_state_ == ControlLoop::kCascade ) {
+    pid_inner_.SetMode(AUTOMATIC);
+    pid_outer_.SetMode(AUTOMATIC);
+    outer_set_ = set_point_;
+    outer_out_inner_set_ = set_point_;
 
   } else {
     Serial.print(F("ERROR: unknown control type "));
-    Serial.println(this->_ControlState);
+    Serial.println(this->control_state_);
   }
 
 }
 
-void ControlLoop::setPoint(double sp) {
+void ControlLoop::SetPoint(float sp) {
 
-  _setpoint = sp;
-  _setpointLower = sp - _bangBangLower;
-  _setpointUpper = sp + _bangBangUpper;
-  setControlType(_ControlState);
+  set_point_ = sp;
+  set_point_lower_ = sp - bangbang_lower_;
+  set_point_upper_ = sp + bangbang_upper_;
+  SetControlType(control_state_);
 }
 
 
-double ControlLoop::getInnerSetPoint() {
-  if (this->_ControlState == CASCADE ) {
-    return outerOutInnerSet;
+float ControlLoop::GetInnerSetPoint() {
+  if (this->control_state_ == kCascade ) {
+    return outer_out_inner_set_;
   }
   return -1.0;
 }
 
-void ControlLoop::setBangBangRange(double lower, double upper) {
+void ControlLoop::SetBangBangRange(float lower, float upper) {
   if ( lower > 0 && upper > 0 ) {
-    _bangBangLower = lower;
-    _bangBangUpper = upper;
-    setPoint(_setpoint);
+    bangbang_lower_ = lower;
+    bangbang_upper_ = upper;
+    SetPoint(set_point_);
   }
 }
 
 
 
-void ControlLoop::setSampleTime(int ms) {
-  _sampleTimeMS = ms;
-  inner.SetSampleTime(_sampleTimeMS);
-  outer.SetSampleTime(_sampleTimeMS*_sampleFactor);
+void ControlLoop::SetSampleTime(unsigned int ms) {
+  sample_time_ms_ = ms;
+  pid_inner_.SetSampleTime(sample_time_ms_);
+  pid_outer_.SetSampleTime(sample_time_ms_*sample_factor_);
 }
 
-void ControlLoop::setOuterSampleFactor(int factor) {
-  _sampleFactor = factor;
-  outer.SetSampleTime(_sampleTimeMS*_sampleFactor);
+void ControlLoop::SetOuterSampleFactor(unsigned int factor) {
+  sample_factor_ = factor;
+  pid_outer_.SetSampleTime(sample_time_ms_*sample_factor_);
 }
 
 
-void ControlLoop::setOnOff(bool turnOn) {
+void ControlLoop::SetOnOff(bool turn_on) {
 
-  inner.SetMode(MANUAL);
-  outer.SetMode(MANUAL);
-  _isOn = turnOn;
+  pid_inner_.SetMode(MANUAL);
+  pid_outer_.SetMode(MANUAL);
+  is_on_ = turn_on;
 
-  if ( _isOn ) {
-    _relay->on();
-    if ( this->_ControlState == ControlLoop::ONOFF ) {
+  if ( is_on_ ) {
+    relay_->On();
+    if ( this->control_state_ == ControlLoop::kOnOff ) {
       ;
-    } else if ( this->_ControlState == ControlLoop::STD ) {
-      inner.SetMode(AUTOMATIC);
+    } else if ( this->control_state_ == ControlLoop::kStd ) {
+      pid_inner_.SetMode(AUTOMATIC);
 
-    } else if ( this->_ControlState == ControlLoop::CASCADE ) {
-      inner.SetMode(AUTOMATIC);
-      outer.SetMode(AUTOMATIC);
+    } else if ( this->control_state_ == ControlLoop::kCascade ) {
+      pid_inner_.SetMode(AUTOMATIC);
+      pid_outer_.SetMode(AUTOMATIC);
 
     } else {
       Serial.print(F("ERROR: unknown control type "));
-      Serial.println(this->_ControlState);
+      Serial.println(this->control_state_);
     }
   } else {
-    _relay->off();
+    relay_->Off();
   }
 
 
 }
 
 
-void ControlLoop::setOutputLimits(int  c, double _min, double _max) {
-  PID* thePid = this->getController(c);
+void ControlLoop::SetOutputLimits(int  c, float _min, float _max) {
+  PID* thePid = this->GetController_(c);
   thePid->SetOutputLimits(_min, _max);
 
-  if ( c == ControlLoop::INNER ) {
-    _outMin = _min;
-    _outMax = _max;
+  if ( c == ControlLoop::kInner ) {
+    out_min_ = _min;
+    out_max_ = _max;
   }
 
 }
 
 
-void ControlLoop::setDirectionIncrease(int  c, bool dir) {
-  PID *thePid = this->getController(c);
+void ControlLoop::SetDirectionIncrease(int  c, bool dir) {
+  PID *thePid = this->GetController_(c);
   if ( dir ) {
     thePid->SetControllerDirection(DIRECT);
   } else {
@@ -292,28 +292,28 @@ void ControlLoop::setDirectionIncrease(int  c, bool dir) {
   }
 }
 
-bool ControlLoop::getDirectionIncrease(int  c) {
-  PID *thePid = this->getController(c);
+bool ControlLoop::GetDirectionIncrease(int  c) {
+  PID *thePid = this->GetController_(c);
   return thePid->GetDirection() == DIRECT;
 }
 
-void ControlLoop::setTunings(int  c, double p, double i, double d) {
-  PID *thePid = this->getController(c);
+void ControlLoop::SetTunings(int  c, float p, float i, float d) {
+  PID *thePid = this->GetController_(c);
   thePid->SetTunings(p, i, d);
 }
 
-double ControlLoop::getKp(int  c) {
-  PID *thePid = this->getController(c);
+float ControlLoop::GetKp(int  c) {
+  PID *thePid = this->GetController_(c);
   return thePid->GetKp();
 }
 
-double ControlLoop::getKi(int  c) {
-  PID *thePid = this->getController(c);
+float ControlLoop::GetKi(int  c) {
+  PID *thePid = this->GetController_(c);
   return thePid->GetKi();
 }
 
-double ControlLoop::getKd(int  c) {
-  PID *thePid = this->getController(c);
+float ControlLoop::GetKd(int  c) {
+  PID *thePid = this->GetController_(c);
   return thePid->GetKd();
 }
 
