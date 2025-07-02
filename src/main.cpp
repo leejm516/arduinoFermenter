@@ -24,21 +24,21 @@ Relay cooler_relay(33, 2);
 // Anonymous classes to use controlloop.h
 class : public DataSource{
   public:
-    double get() {
+    float Get() {
       return temp_controller.getCurrentTemp();
     }
 } temp_data_source;
 
 class : public RelayUpdate {
   public:
-    void on() {
+    void On() {
       heater_relay.setRelayMode(kRelayModeAutomatic);
     }
-    void off() {
+    void Off() {
       heater_relay.setRelayMode(kRelayModeManual);
       heater_relay.setDutyCyclePercent(0.0);
     }
-    void update(double res) {
+    void Update(float res) {
       heater_relay.setDutyCyclePercent(res);
       heater_relay.loop();
     }
@@ -46,21 +46,21 @@ class : public RelayUpdate {
 
 class : public RelayUpdate {
   public:
-    void on() {
+    void On() {
       cooler_relay.setRelayMode(kRelayModeAutomatic);
     }
-    void off() {
+    void Off() {
       cooler_relay.setRelayMode(kRelayModeManual);
       cooler_relay.setDutyCyclePercent(0.0);
     }
-    void update(double res) {
+    void Update(float res) {
       cooler_relay.setDutyCyclePercent(res);
       cooler_relay.loop();
     }
 } cooler;
 
-ControlLoop heaterControlLoop(&temp_data_source, &heater, temp_controller.getSetTemp());
-ControlLoop coolerControlLoop(&temp_data_source, &cooler, temp_controller.getSetTemp());
+ControlLoop heater_control_loop(&temp_data_source, &heater, temp_controller.getSetTemp());
+ControlLoop cooler_control_loop(&temp_data_source, &cooler, temp_controller.getSetTemp());
 
 
 // motor control
@@ -72,19 +72,19 @@ void measureMotorPeriod(void);
 
 class : public DataSource{
   public:
-    double get() {
+    float Get() {
       return motor.getCurrentRpm();
     }
 } motor_data_source;
 
 class : public RelayUpdate {
   public:
-    void on() {      
+    void On() {      
     }
-    void off() {
+    void Off() {
       motor.setOutput(0);      
     }
-    void update(double res) {
+    void Update(float res) {
       motor.setOutput((unsigned int)res);      
     }
 } motor_relay;
@@ -127,28 +127,29 @@ void setup() {
 
   // Temp control
   // cooler loop
-  coolerControlLoop.setControlType(ControlLoop::STD);
-  coolerControlLoop.setBangBangRange(0.5, 5);
-  coolerControlLoop.enableBangBang();
-  coolerControlLoop.setOutputLimits(ControlLoop::INNER, 0.0, 1.0);
-  coolerControlLoop.setTunings(0.05, 0.005, 0.001);
-  coolerControlLoop.setDirectionIncrease(ControlLoop::INNER, 0); // pid 제어에서만 작동함
-  coolerControlLoop.setOn();  
+  cooler_control_loop.SetControlType(ControlLoop::kStd);
+  cooler_control_loop.SetBangBangRange(0.5, 5);
+  cooler_control_loop.EnableBangBang();
+  cooler_control_loop.SetOutputLimits(ControlLoop::kInner, 0.0, 1.0);
+  cooler_control_loop.SetTunings(0.05, 0.005, 0.001);
+  cooler_control_loop.SetDirectionIncrease(ControlLoop::kInner, 0); // pid 제어에서만 작동함
+  cooler_control_loop.SetOn();  
   
   // heater loop
-  heaterControlLoop.setControlType(ControlLoop::STD);
-  heaterControlLoop.setBangBangRange(5, 0.5);
-  heaterControlLoop.enableBangBang();
-  heaterControlLoop.setOutputLimits(ControlLoop::INNER, 0.0, 1.0);
-  heaterControlLoop.setTunings(0.05, 0.005, 0.001);
-  heaterControlLoop.setDirectionIncrease(ControlLoop::INNER, 1); // pid 제어에서만 작동함
-  heaterControlLoop.setOn();  
+  heater_control_loop.SetControlType(ControlLoop::kStd);
+  heater_control_loop.SetBangBangRange(5, 0.5);
+  heater_control_loop.EnableBangBang();
+  heater_control_loop.SetOutputLimits(ControlLoop::kInner, 0.0, 1.0);
+  heater_control_loop.SetTunings(0.05, 0.005, 0.001);
+  heater_control_loop.SetDirectionIncrease(ControlLoop::kInner, 1); // pid 제어에서만 작동함
+  heater_control_loop.SetOn();  
 
   // motor loop
-  motor_control_loop.setControlType(ControlLoop::STD);
-  motor_control_loop.setOutputLimits(ControlLoop::INNER, 0.0, 999.0);
-  motor_control_loop.setTunings(0.1, 0.12, 0.25);
-  motor_control_loop.setOn();  
+  motor_control_loop.SetControlType(ControlLoop::kStd);
+  motor_control_loop.SetOutputLimits(ControlLoop::kInner, 0.0, 999.0);
+  motor_control_loop.SetTunings(0.1, 0.12, 0.25);
+  motor_control_loop.SetSampleTime(500);
+  motor_control_loop.SetOn();  
 
   unsigned long pt = millis();
   
@@ -185,8 +186,8 @@ void setup() {
     ph_control.processState(ct);
 
     temp_controller.update();
-    coolerControlLoop.Compute();
-    heaterControlLoop.Compute();    
+    cooler_control_loop.Compute();
+    heater_control_loop.Compute();    
 
     motor.calculateRpm();
     motor_control_loop.Compute();
@@ -195,7 +196,7 @@ void setup() {
       String my_string = Serial.readStringUntil('\n');
       Serial.print("RPM이 입력되었습니다: ");
       Serial.println(my_string);
-      motor_control_loop.setPoint(my_string.toInt());
+      motor_control_loop.SetPoint(my_string.toInt());
     }
   } 
 }
@@ -207,7 +208,7 @@ void measureMotorPeriod() {
   static volatile unsigned long last_update = 0;
   static volatile unsigned long last_time = 0;
   unsigned long current_time = micros();
-  if (current_time - last_update >= 1000) {
+  if (current_time - last_update >= 10000) {
     if (last_time > 0) {
         unsigned long period = current_time - last_time;
         motor.update(period);
