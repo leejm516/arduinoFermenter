@@ -147,8 +147,9 @@ void setup() {
   // motor loop
   motor_control_loop.SetControlType(ControlLoop::kStd);
   motor_control_loop.SetOutputLimits(ControlLoop::kInner, 0.0, 999.0);
-  motor_control_loop.SetTunings(0.1, 0.12, 0.25);
-  motor_control_loop.SetSampleTime(500);
+  motor_control_loop.SetTunings(0.5, 0.5, 0.05700
+  );
+  motor_control_loop.SetSampleTime(250);
   motor_control_loop.SetOn();  
 
   unsigned long pt = millis();
@@ -208,7 +209,7 @@ void measureMotorPeriod() {
   static volatile unsigned long last_update = 0;
   static volatile unsigned long last_time = 0;
   unsigned long current_time = micros();
-  if (current_time - last_update >= 10000) {
+  if (current_time - last_update >= 2000) {
     if (last_time > 0) {
         unsigned long period = current_time - last_time;
         motor.update(period);
