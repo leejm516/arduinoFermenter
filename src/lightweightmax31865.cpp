@@ -189,7 +189,8 @@ float LightweightMAX31865::calculateTemperature(uint16_t rtd_raw, float rtd_nomi
     // Callendar-Van Dusen equation (simplified for PT100)
     // R(T) = R0 * (1 + A*T + B*T^2)
     // Solving for T using quadratic formula
-    const float A = 3.9083e-3;
+    // const float A = 3.9083e-3; // default constant
+    const float A = 3.7283e-3; // This value is for one of my sensors. Change before use 
     const float B = -5.775e-7;
     
     float ratio = rtd_resistance / rtd_nominal;
