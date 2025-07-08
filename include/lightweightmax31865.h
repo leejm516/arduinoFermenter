@@ -70,7 +70,7 @@ public:
     // Trigger one-shot conversion
     void triggerOneShot();
 
-    void setOffset(float offset);
+    void setROffset(float offset);
 
 private:
     uint8_t cs_, mosi_, miso_, clk_;

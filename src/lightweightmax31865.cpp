@@ -98,7 +98,7 @@ void LightweightMAX31865::triggerOneShot() {
     writeRegister8(MAX31865_CONFIG_REG, config);
 }
 
-void LightweightMAX31865::setOffset(float offset) {
+void LightweightMAX31865::setROffset(float offset) {
     r_offset_ = offset;
 }
 

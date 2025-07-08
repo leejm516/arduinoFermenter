@@ -17,6 +17,8 @@ class TemperatureController {
         
         void init(max31865_numwires_t);
 
+        void init(max31865_numwires_t, float);
+
         void update(void);
 
         float getCurrentTemp(void);

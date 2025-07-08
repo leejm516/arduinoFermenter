@@ -2,7 +2,12 @@
 
 void TemperatureController::init(max31865_numwires_t numwire) {
     tempSensor.begin(numwire);
-    tempSensor.setOffset(0.24f);
+    // tempSensor.setOffset(-2.0f);
+}
+
+void TemperatureController::init(max31865_numwires_t numwire, float offset) {
+    tempSensor.begin(numwire);
+    tempSensor.setROffset(offset);
 }
 
 void TemperatureController::update() {

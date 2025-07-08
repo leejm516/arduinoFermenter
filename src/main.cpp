@@ -100,7 +100,7 @@ void setup() {
   ph_control.SetOutput();
   ph_control.SetControlOn();
 
-  temp_controller.init(MAX31865_2WIRE);
+  temp_controller.init(MAX31865_2WIRE, -2.43f);
 
   Serial.println("온도센서 초기화...");
   delay(100);
@@ -120,7 +120,7 @@ void setup() {
   ICR4 = 999;
   OCR4A = 0;
 
-  attachInterrupt(digitalPinToInterrupt(signal_pin), MeasureMotorPeriod, RISING);
+  attachInterrupt(digitalPinToInterrupt(signal_pin), MeasureMotorPeriod, RISING); // detect feedback signal from a bldc motor driver
 
   Serial.println("모터 구동 설정...");
   delay(100);
@@ -175,7 +175,7 @@ void setup() {
 
         Serial.print(", 현재 온도:");
         Serial.print(temp_controller.getCurrentTemp());
-        Serial.println("°C");       
+        Serial.print("°C");       
 
         Serial.print(", 현재 RPM: ");
         Serial.println(motor.GetCurrentRpm());
