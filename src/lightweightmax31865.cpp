@@ -19,7 +19,7 @@ LightweightMAX31865::LightweightMAX31865(uint8_t cs, uint8_t mosi, uint8_t miso,
     digitalWrite(mosi_, LOW);
 }
 
-bool LightweightMAX31865::begin(max31865_numwires_t wires) {
+bool LightweightMAX31865::begin(max31865_numwires_t wires, float rtd_nominal, float ref_resistor) {
     if (use_hardware_spi_) {
         SPI.begin();
     }
@@ -36,11 +36,28 @@ bool LightweightMAX31865::begin(max31865_numwires_t wires) {
     // Check if sensor is responding
     uint8_t readback = readRegister8(MAX31865_CONFIG_REG);
     return (readback == config);
+
+    // Set the resistor values;
+    rtd_nominal_ = rtd_nominal;
+    ref_resistor_ = ref_resistor; 
+
+    // Callendar-Van Dusen equation (simplified for PT100)
+    // R(T) = R0 * (1 + A*T + B*T^2)
+    // Solving for T using quadratic formula
+    // const float A = 3.9083e-3; // default constant
+    const float A = 3.7283e-3; // This value is for one of my sensors. Change before use 
+    const float B = -5.775e-7;
+
+    // Calculate linerization constans for given A and B
+    Z1_ = (-1.0f)*A;
+    Z2_ = A*A - 4 * B;
+    Z3_ = 4 * B / ref_resistor_;
+    Z4_ = 2 * B;
 }
 
-float LightweightMAX31865::temperature(float rtd_nominal, float ref_resistor) {
+float LightweightMAX31865::temperature() {
     uint16_t rtd_raw = readRTD();
-    return calculateTemperature(rtd_raw, rtd_nominal, ref_resistor);
+    return calculateTemperature(rtd_raw);
 }
 
 uint16_t LightweightMAX31865::readRTD() {
@@ -177,37 +194,18 @@ uint8_t LightweightMAX31865::softSPITransfer(uint8_t data) {
     return result;
 }
 
-float LightweightMAX31865::calculateTemperature(uint16_t rtd_raw, float rtd_nominal, float ref_resistor) {
+float LightweightMAX31865::calculateTemperature(uint16_t rtd_raw) {
     if (rtd_raw == 0xFFFF) {
         return NAN; // Fault condition
     }
     
     // Convert ADC value to resistance
-    float rtd_resistance = (rtd_raw * ref_resistor) / 32768.0;
+    float rtd_resistance = (rtd_raw * ref_resistor_) / 32768.0;
     rtd_resistance -= r_offset_;
-    
-    // Callendar-Van Dusen equation (simplified for PT100)
-    // R(T) = R0 * (1 + A*T + B*T^2)
-    // Solving for T using quadratic formula
-    // const float A = 3.9083e-3; // default constant
-    const float A = 3.7283e-3; // This value is for one of my sensors. Change before use 
-    const float B = -5.775e-7;
-    
-    float ratio = rtd_resistance / rtd_nominal;
-    float temp = (ratio - 1.0) / A;
-    
-    // For better accuracy, use quadratic correction
-    if (temp < 0) {
-        // For negative temperatures, different coefficients are used
-        // This is a simplified calculation
-        temp = (ratio - 1.0) / A;
-    } else {
-        // Quadratic correction for positive temperatures
-        float discriminant = A * A - 4 * B * (1.0 - ratio);
-        if (discriminant >= 0) {
-            temp = (-A + sqrt(discriminant)) / (2 * B);
-        }
-    }
-    
+
+    float temp;
+    temp = Z2_ + Z3_ * rtd_resistance;
+    temp =( sqrt(temp) + Z1_ ) / Z4_;
+
     return temp;
 }

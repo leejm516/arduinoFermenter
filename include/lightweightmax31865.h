@@ -50,10 +50,10 @@ public:
     LightweightMAX31865(uint8_t cs, uint8_t mosi, uint8_t miso, uint8_t clk);
     
     // Initialize the sensor
-    bool begin(max31865_numwires_t wires = MAX31865_2WIRE);
+    bool begin(max31865_numwires_t wires = MAX31865_2WIRE, float rtd_nominal = 100.0f, float ref_resistor = 430.0f);
     
     // Read temperature in Celsius
-    float temperature(float rtd_nominal = 100.0, float ref_resistor = 430.0);
+    float temperature();
     
     // Read raw ADC value
     uint16_t readRTD();
@@ -76,6 +76,9 @@ private:
     uint8_t cs_, mosi_, miso_, clk_;
     bool use_hardware_spi_;
     float r_offset_;
+    float rtd_nominal_;
+    float ref_resistor_;
+    float Z1_, Z2_, Z3_, Z4_;
     
     // SPI communication functions
     void writeRegister8(uint8_t reg, uint8_t value);
@@ -86,7 +89,7 @@ private:
     uint8_t softSPITransfer(uint8_t data);
     
     // Temperature calculation
-    float calculateTemperature(uint16_t rtd_raw, float rtd_nominal, float ref_resistor);
+    float calculateTemperature(uint16_t rtd_raw);
 };
 
 #endif
