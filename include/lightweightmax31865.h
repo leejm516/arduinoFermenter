@@ -79,6 +79,7 @@ private:
     float rtd_nominal_;
     float ref_resistor_;
     float Z1_, Z2_, Z3_, Z4_;
+    float cvd_a_, cvd_b_;
     
     // SPI communication functions
     void writeRegister8(uint8_t reg, uint8_t value);

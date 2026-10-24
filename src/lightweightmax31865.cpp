@@ -1,9 +1,14 @@
 #include "lightweightmax31865.h"
 
 // Hardware SPI constructor
-LightweightMAX31865::LightweightMAX31865(uint8_t cs) : cs_(cs), use_hardware_spi_(true) {
-    pinMode(cs_, OUTPUT);
-    digitalWrite(cs_, HIGH);
+LightweightMAX31865::LightweightMAX31865(uint8_t cs) 
+	: cs_(cs), mosi_(0), miso_(0), clk_(0),
+	  use_hardware_spi_(true), r_offset_(0.0f),
+	  rtd_nominal_(100.0f), ref_resistor_(430.0f),
+	  Z1_(0.0f), Z2_(0.0f), Z3_(0.0f), Z4_(0.0f),
+	  cvd_a_(3.9083e-3f), cvd_b_(-5.775e-7f) {
+	pinMode(cs_, OUTPUT);
+	digitalWrite(cs_, HIGH);
 }
 
 // Software SPI constructor
@@ -19,40 +24,45 @@ LightweightMAX31865::LightweightMAX31865(uint8_t cs, uint8_t mosi, uint8_t miso,
     digitalWrite(mosi_, LOW);
 }
 
-bool LightweightMAX31865::begin(max31865_numwires_t wires, float rtd_nominal, float ref_resistor) {
-    if (use_hardware_spi_) {
-        SPI.begin();
-    }
-    
-    // Configure the sensor
-    uint8_t config = MAX31865_CONFIG_BIAS;
-    if (wires == MAX31865_3WIRE) {
-        config |= MAX31865_CONFIG_3WIRE;
-    }
-    
-    writeRegister8(MAX31865_CONFIG_REG, config);
-    delay(10);
-    
-    // Check if sensor is responding
-    uint8_t readback = readRegister8(MAX31865_CONFIG_REG);
-    return (readback == config);
+bool LightweightMAX31865::begin(max31865_numwires_t wires, 
+		float rtd_nominal, 
+		float ref_resistor) {
 
-    // Set the resistor values;
-    rtd_nominal_ = rtd_nominal;
-    ref_resistor_ = ref_resistor; 
+	if (rtd_nominal <= 0.0f || ref_resistor <= 0.0f) {
+		return false;
+	}
 
-    // Callendar-Van Dusen equation (simplified for PT100)
-    // R(T) = R0 * (1 + A*T + B*T^2)
-    // Solving for T using quadratic formula
-    // const float A = 3.9083e-3; // default constant
-    const float A = 3.7283e-3; // This value is for one of my sensors. Change before use 
-    const float B = -5.775e-7;
+	// Set the resistor values;
+	rtd_nominal_ = rtd_nominal;
+	ref_resistor_ = ref_resistor;
 
-    // Calculate linerization constans for given A and B
-    Z1_ = (-1.0f)*A;
-    Z2_ = A*A - 4 * B;
-    Z3_ = 4 * B / ref_resistor_;
-    Z4_ = 2 * B;
+	// Callendar-Van Dusen equation (simplified for PT100)
+	// R(T) = R0 * (1 + A*T + B*T^2)
+	// Solving for T using quadratic formula
+
+	// Calculate linerization constans for given A and B
+	Z1_ = (-1.0f)*cvd_a_;
+	Z2_ = cvd_a_*cvd_a_ - 4.0f * cvd_b_;
+	Z3_ = 4.0f * cvd_b_ / ref_nominal_;
+	Z4_ = 2.0f * cvd_b_;
+
+	if (use_hardware_spi_) {
+		SPI.begin();
+	}
+    
+	// Configure the sensor
+	uint8_t config = MAX31865_CONFIG_BIAS;
+	if (wires == MAX31865_3WIRE) {
+		config |= MAX31865_CONFIG_3WIRE;
+	}
+    
+	writeRegister8(MAX31865_CONFIG_REG, config);
+	delay(10);
+    
+	// Check if sensor is responding
+	uint8_t readback = readRegister8(MAX31865_CONFIG_REG);
+
+	return (readback == config);
 }
 
 float LightweightMAX31865::temperature() {
