@@ -71,26 +71,45 @@ uint16_t Relay::GetPeriodInSeconds(void) {
 }
 
 void Relay::Loop(void) {
-   uint32_t newTime = millis();
-   uint32_t offTime = period_in_seconds_ * 1000 * duty_cycle_;
+	// This function updates the relay status based on the elapsed time with a duty cycle and a period given
 
-   if (mode_ == kRelayModeManual) {
-      return;
-   }
+	if (mode_ == kRelayModeManual) {
+		return;
+        }
 
-   if (newTime < old_time_) {
-      period_time_ += (UINT32_MAX - old_time_ + newTime);
-   } else {
-      period_time_ += (newTime - old_time_);
-   }
-   old_time_ = newTime;
+	const uint32_t now = millis();
+	const uint32_t elapsed = now - old_time_;
+	old_time_ = now;
 
-   if (period_time_ < offTime) {
-      if (duty_cycle_ > 0.0) SetRelayPosition(kRelayPositionClosed);
-   } else if (period_time_ >= period_in_seconds_*1000) {
-      period_time_ = 0;
-      if (duty_cycle_ > 0.0) SetRelayPosition(kRelayPositionClosed);
-   } else {
-      SetRelayPosition(kRelayPositionOpen);
-   }
+	const uint32_t period_ms = 
+		static_cast<uint32_t>(period_in_seconds_) * 1000UL;
+
+	// fail-safe
+	if (period_ms == 0) {
+		period_time_ = 0;
+		SetRelayPosition(kRelayPositionOpen);
+		return;
+	}
+
+	period_time_ = (period_time_ + elapsed % period_ms) % period_ms;
+
+	if (duty_cycle_ <= 0.0f) {
+		SetRelayPosition(kRelayPositionOpen);
+        	return;
+	}
+
+	if (duty_cycle_ >= 1.0f) {
+		SetRelayPosition(kRelayPositionClosed);
+		return;
+	}
+
+	const uint32_t on_time_ms =
+		static_cast<uint32_t>(
+				static_cast<float>(period_ms) * duty_cycle_);
+
+	SetRelayPosition(
+			period_time_ < on_time_ms
+			? kRelayPositionClosed
+			: kRelayPositionOpen
+			);
 }
