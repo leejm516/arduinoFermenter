@@ -43,7 +43,7 @@ bool LightweightMAX31865::begin(max31865_numwires_t wires,
 	// Calculate linerization constans for given A and B
 	Z1_ = (-1.0f)*cvd_a_;
 	Z2_ = cvd_a_*cvd_a_ - 4.0f * cvd_b_;
-	Z3_ = 4.0f * cvd_b_ / ref_nominal_;
+	Z3_ = 4.0f * cvd_b_ / rtd_nominal_;
 	Z4_ = 2.0f * cvd_b_;
 
 	if (use_hardware_spi_) {
