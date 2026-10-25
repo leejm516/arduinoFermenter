@@ -58,7 +58,7 @@ void SimplePhController::ProcessState(unsigned long ct) {
                     last_on_off_time_ = ct;
                     break;
                 case kEventPhLow:
-                    current_state_ = kStateAcidOff;
+                    current_state_ = kStateBaseOn;
                     Serial.println("염기 투입을 시작합니다.");
                     digitalWrite(base_pin_, HIGH);
                     last_on_off_time_ = ct;
@@ -118,11 +118,11 @@ void SimplePhController::ProcessState(unsigned long ct) {
 
 // timeout 함수는 나중에 하나로 통합 가능할듯
 uint8_t SimplePhController::DetectTimeoutAcidOn() {
-    return (current_state_ == kStateAcidOff && millis() - last_on_off_time_ >= on_time_) ? kEventTimeout : kEventNone;
+    return (current_state_ == kStateAcidOn && millis() - last_on_off_time_ >= on_time_) ? kEventTimeout : kEventNone;
 }
 
 uint8_t SimplePhController::DetectTimeoutAcidOff() {
-    return (current_state_ == kStateAcidOff && millis() - last_on_off_time_ >= on_time_) ? kEventTimeout : kEventNone;
+    return (current_state_ == kStateAcidOff && millis() - last_on_off_time_ >= off_time_) ? kEventTimeout : kEventNone;
 }
 
 uint8_t SimplePhController::DetectTimeoutBaseOn() {
@@ -130,7 +130,7 @@ uint8_t SimplePhController::DetectTimeoutBaseOn() {
 }
 
 uint8_t SimplePhController::DetectTimeoutBaseOff() {
-    return (current_state_ == kStateBaseOff && millis() - last_on_off_time_ >= on_time_) ? kEventTimeout : kEventNone;
+    return (current_state_ == kStateBaseOff && millis() - last_on_off_time_ >= off_time_) ? kEventTimeout : kEventNone;
 }
 
 
@@ -143,12 +143,25 @@ uint8_t SimplePhController::DetectPhLow() {
 }
 
 void SimplePhController::SetOnTime(float t) {
-    on_time_ = (uint8_t)(t*1000);
+	if ( !(t >= 0.0f && t <= 600.0f) ) {
+		return;
+	}
+	else {
+		on_time_ = (uint32_t)(t * 1000.0f);
+	}
 }
 void SimplePhController::SetOffTime(float t) {
-    off_time_ = (uint8_t)(t*1000);
+	if ( !(t >= 0.0f && t <= 600.0f) ) {
+		return;
+	}
+	else {
+		off_time_ = (uint32_t)(t * 1000.0f);
+	}
 }
 
 void SimplePhController::SetControlOn() {
-    current_state_ = kStateRunning;
+	if (current_state_ == kStateIdle) {
+		last_event_ = kEventNone;
+		current_state_ = kStateRunning;
+	}
 }
