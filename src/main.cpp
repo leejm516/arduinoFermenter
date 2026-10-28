@@ -65,31 +65,11 @@ ControlLoop cooler_control_loop(&temp_data_source, &cooler, temp_controller.getS
 
 // motor control
 const uint8_t signal_pin = 2;
-const uint8_t pwm_pin = 6;
-BldcMotor motor(pwm_pin, signal_pin);
+BldcMotor motor;
 
 void MeasureMotorPeriod(void);
 
-class : public DataSource{
-  public:
-    float Get() {
-      return motor.GetCurrentRpm();
-    }
-} motor_data_source;
-
-class : public RelayUpdate {
-  public:
-    void On() {      
-    }
-    void Off() {
-      motor.SetOutput(0);      
-    }
-    void Update(float res) {
-      motor.SetOutput((unsigned int)res);      
-    }
-} motor_relay;
-
-ControlLoop motor_control_loop(&motor_data_source, &motor_relay, 0);
+ControlLoop motor_control_loop(&motor, &motor, 0);
 
 void setup() {
   // put your setup code here, to run once:
@@ -107,19 +87,8 @@ void setup() {
 
 
   // Motor control for agitation
-  // pwm_pin: PWM signal for controlling motor driver, D6 pin (arduino mega)
-  // signal_pin: feedback signal from a motor driver
-  pinMode(signal_pin, INPUT_PULLUP);
-  pinMode(pwm_pin, OUTPUT);
-
-  // Modify PWN mode on pin D6 by directly setting registers
-  // Fast PWM, 2 kHz
-  TCCR4A = _BV(COM4A1) | _BV(WGM41);
-  TCCR4B = _BV(WGM43) | _BV(WGM42) | _BV(CS41);
-
-  ICR4 = 999;
-  OCR4A = 0;
-
+  // PWM on D6 (Timer4), feedback pulses from the motor driver on signal_pin
+  motor.Begin(signal_pin);
   attachInterrupt(digitalPinToInterrupt(signal_pin), MeasureMotorPeriod, RISING); // detect feedback signal from a bldc motor driver
 
   Serial.println("모터 구동 설정...");
@@ -207,15 +176,5 @@ void loop() {
 }
 
 void MeasureMotorPeriod() {
-  static volatile unsigned long last_update = 0;
-  static volatile unsigned long last_time = 0;
-  unsigned long current_time = micros();
-  if (current_time - last_update >= 2000) {
-    if (last_time > 0) {
-        unsigned long period = current_time - last_time;
-        motor.Update(period);
-    }
-    last_update = current_time;
-  }
-  last_time = current_time;
+  motor.OnEdge();
 }
