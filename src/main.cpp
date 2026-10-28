@@ -40,7 +40,6 @@ class : public RelayUpdate {
     }
     void Update(float res) {
       heater_relay.SetDutyCyclePercent(res);
-      heater_relay.Loop();
     }
 } heater;
 
@@ -55,7 +54,6 @@ class : public RelayUpdate {
     }
     void Update(float res) {
       cooler_relay.SetDutyCyclePercent(res);
-      cooler_relay.Loop();
     }
 } cooler;
 
@@ -157,6 +155,8 @@ void setup() {
     temp_controller.update();
     cooler_control_loop.Compute();
     heater_control_loop.Compute();    
+    heater_relay.Loop();   // duty-cycle timing must run every pass, not only when the PID updates
+    cooler_relay.Loop();
 
     motor.CalculateRpm();
     motor_control_loop.Compute();
