@@ -13,30 +13,50 @@ class BldcMotor : public DataSource, public RelayUpdate {
         static const uint16_t kMaxRpm = 1000;         // upper limit for the setpoint
         static const uint16_t kMaxOutput = 999;       // PWM duty range 0..999 (Timer4 TOP = ICR4)
 
-        // Configure the pins and Timer4 (2 kHz fast PWM). Call once in setup().
+        // Begin(signal_pin)
+        //   Sets up the hardware: the feedback pin as input (with pull-up), D6 as output,
+        //   and Timer4 as a 2 kHz PWM generator with 0% duty (motor stopped).
+        //   Call once in setup(). Attaching the ISR (attachInterrupt) is left to the caller,
+        //   because it needs a plain function that forwards to OnEdge().
         void Begin(uint8_t signal_pin);
 
-        // Record one feedback pulse. Call from the rising-edge ISR only.
+        // OnEdge()
+        //   Handles one feedback pulse: measures the time since the previous pulse and
+        //   stores it for averaging. Noise edges are ignored. Does no RPM math,
+        //   so it stays fast enough for an ISR. Call from the rising-edge ISR only.
         void OnEdge();
 
-        // Convert the recorded pulse periods into current_rpm_. Call from the main loop.
+        // CalculateRpm()
+        //   Averages the stored pulse periods and converts them to RPM, updating the value
+        //   returned by GetCurrentRpm() / Get(). Sets 0 RPM if the motor has stopped.
+        //   Call repeatedly from the main loop (not from an ISR).
         void CalculateRpm();
 
-        // RPM setpoint (clamped to kMaxRpm); the PID in ControlLoop uses it as its target.
+        // SetRpm(rpm) / GetSetRpm()
+        //   Store / read the target speed. Values above kMaxRpm are clamped.
+        //   This only stores the number; main.cpp passes it to the PID via
+        //   motor_control_loop.SetPoint(). Nothing is written to the motor here.
         void SetRpm(uint16_t rpm) { set_rpm_ = min(rpm, kMaxRpm); }
         uint16_t GetSetRpm() const { return set_rpm_; }
 
-        // Last RPM computed by CalculateRpm().
+        // GetCurrentRpm()
+        //   Returns the most recent measured speed. It only changes when CalculateRpm() runs.
         uint16_t GetCurrentRpm() const { return current_rpm_; }
 
-        // Write the PWM duty (0..kMaxOutput, clamped) to the motor driver.
+        // SetOutput(output)
+        //   Sets the PWM duty sent to the motor driver: 0 = stopped, kMaxOutput = full power.
+        //   Values above kMaxOutput are clamped. Takes effect immediately.
         void SetOutput(uint16_t output);
 
-        // DataSource / RelayUpdate interface for ControlLoop
-        float Get() { return current_rpm_; }                        // process variable for the PID
-        void On() {}                                                // nothing to do; PWM runs continuously
-        void Off() { SetOutput(0); }                                // stop the motor
-        void Update(float output) { SetOutput((uint16_t)output); }  // PID output -> PWM duty
+        // --- Interface used by ControlLoop (see controlloop.h) ---
+        // Get():    the measured value (RPM) that the PID compares with its setpoint.
+        // On():     called when the loop starts; nothing to do since the PWM always runs.
+        // Off():    called when the loop is stopped; turns the motor off (duty 0).
+        // Update(): receives the PID result each sample time and applies it as the PWM duty.
+        float Get() { return current_rpm_; }
+        void On() {}
+        void Off() { SetOutput(0); }
+        void Update(float output) { SetOutput((uint16_t)output); }
 
     private:
         static const uint8_t kPulsesPerRev = 3 * 4 * 4;             // feedback pulses per shaft revolution

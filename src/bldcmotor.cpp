@@ -3,6 +3,11 @@
 // Timer4 channel A is wired to D6 on the Mega, so the PWM pin is fixed.
 static const uint8_t kPwmPin = 6;
 
+/*
+ * Begin: one-time hardware setup.
+ * Configures the two pins, then switches Timer4 from the Arduino default to fast PWM
+ * with a custom TOP so the duty cycle has 1000 steps at 2 kHz (instead of 256 steps at ~490 Hz).
+ */
 void BldcMotor::Begin(uint8_t signal_pin) {
     // The feedback line is pulled up so it doesn't float if the driver is unplugged.
     pinMode(signal_pin, INPUT_PULLUP);
@@ -16,11 +21,22 @@ void BldcMotor::Begin(uint8_t signal_pin) {
     OCR4A = 0;   // start with the motor stopped
 }
 
+/*
+ * SetOutput: clamp the requested duty to 0..kMaxOutput and write it to OCR4A.
+ * The timer hardware then produces the PWM on D6 by itself; no further CPU work is needed.
+ */
 void BldcMotor::SetOutput(uint16_t output) {
     OCR4A = min(output, kMaxOutput);   // OCR4A is the duty: 0 = off, kMaxOutput = full
 }
 
-// Runs in interrupt context (interrupts already disabled), so keep it short.
+/*
+ * OnEdge: ISR-side half of the speed measurement.
+ * For every rising edge it computes the time since the last accepted edge and
+ *   1. drops it if it is too short to be real (debounce),
+ *   2. restarts the averaging if it is too long (the motor had stopped),
+ *   3. otherwise pushes it into the ring buffer.
+ * Runs in interrupt context (interrupts already disabled), so it must stay short.
+ */
 void BldcMotor::OnEdge() {
     unsigned long now = micros();
     unsigned long period = now - last_edge_us_;   // unsigned subtraction is micros() overflow-safe
@@ -44,6 +60,12 @@ void BldcMotor::OnEdge() {
     if (count_ < kSamples) count_++;
 }
 
+/*
+ * CalculateRpm: main-loop-side half of the speed measurement.
+ * Copies the ring buffer contents under a brief interrupt lock, averages them, and
+ * converts the mean period to RPM. Floating-point math is done outside the lock so
+ * that interrupts are blocked for as short a time as possible.
+ */
 void BldcMotor::CalculateRpm() {
     unsigned long sum = 0;
     uint8_t n;
