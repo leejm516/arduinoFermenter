@@ -167,7 +167,7 @@ void PID::SetOutputLimits(float min_val, float max_val)
 	   else if(*my_output_ < out_min_) *my_output_ = out_min_;
 
 	   if(output_sum_ > out_max_) output_sum_= out_max_;
-	   else if(output_sum_ < out_max_) output_sum_= out_min_;
+	   else if(output_sum_ < out_min_) output_sum_= out_min_;
    }
 }
 
