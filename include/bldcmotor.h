@@ -61,15 +61,15 @@ class BldcMotor : public DataSource, public RelayUpdate {
     private:
         static const uint8_t kPulsesPerRev = 3 * 4 * 4;             // feedback pulses per shaft revolution
         static const uint8_t kSamples = 10;                         // moving-average length
-        static const unsigned long kMinPeriodUs = 600;              // edges closer than this are noise (> 1000 RPM)
-        static const unsigned long kStallTimeoutUs = 500000;        // no edge for this long -> 0 RPM
+        static const uint32_t kMinPeriodUs = 600;              // edges closer than this are noise (> 1000 RPM)
+        static const uint32_t kStallTimeoutUs = 500000;        // no edge for this long -> 0 RPM
 
         uint16_t current_rpm_ = 0;
         uint16_t set_rpm_ = 0;
 
         // Shared between the ISR and the main loop, hence volatile.
-        volatile unsigned long last_edge_us_ = 0;     // micros() of the last accepted edge
-        volatile unsigned long periods_[kSamples] = {}; // ring buffer of pulse periods [us]
+        volatile uint32_t last_edge_us_ = 0;     // micros() of the last accepted edge
+        volatile uint32_t periods_[kSamples] = {}; // ring buffer of pulse periods [us]
         volatile uint8_t head_ = 0;                   // next slot to overwrite
         volatile uint8_t count_ = 0;                  // valid samples (<= kSamples)
 };
