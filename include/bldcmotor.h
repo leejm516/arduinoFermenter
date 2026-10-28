@@ -48,6 +48,12 @@ class BldcMotor : public DataSource, public RelayUpdate {
         //   Values above kMaxOutput are clamped. Takes effect immediately.
         void SetOutput(uint16_t output);
 
+        // IsStalled()
+        //   Returns true if the motor has been driven with significant power (output >= kStallMinOutput)
+        //   toward a non-zero setpoint, yet reported 0 RPM for kStallTimeoutMs or longer.
+        //   Call from the main loop right after CalculateRpm().
+        bool IsStalled();
+
         // --- Interface used by ControlLoop (see controlloop.h) ---
         // Get():    the measured value (RPM) that the PID compares with its setpoint.
         // On():     called when the loop starts; nothing to do since the PWM always runs.
@@ -63,9 +69,15 @@ class BldcMotor : public DataSource, public RelayUpdate {
         static const uint8_t kSamples = 10;                         // moving-average length
         static const uint32_t kMinPeriodUs = 600;              // edges closer than this are noise (> 1000 RPM)
         static const uint32_t kStallTimeoutUs = 500000;        // no edge for this long -> 0 RPM
+        static const uint16_t kStallMinOutput = 300;           // ~30% duty; below this, 0 RPM may be normal
+        static const uint32_t kStallTimeoutMs = 3000;          // driven at 0 RPM for this long -> stalled
 
         uint16_t current_rpm_ = 0;
         uint16_t set_rpm_ = 0;
+        uint16_t output_ = 0;                // last duty written by SetOutput()
+
+        bool stall_pending_ = false;         // stall condition seen, waiting for the timeout
+        uint32_t stall_since_ms_ = 0;
 
         // Shared between the ISR and the main loop, hence volatile.
         volatile uint32_t last_edge_us_ = 0;     // micros() of the last accepted edge

@@ -159,6 +159,10 @@ void setup() {
     cooler_relay.Loop();
 
     motor.CalculateRpm();
+    if (motor_control_loop.IsOn() && motor.IsStalled()) {
+      motor_control_loop.SetOff();   // duty 0 and PID to MANUAL, so the integral stops winding up
+      Serial.println(F("ERROR: motor stalled or no feedback signal. Motor stopped."));
+    }
     motor_control_loop.Compute();
 
     if (Serial.available()) {      

@@ -26,7 +26,28 @@ void BldcMotor::Begin(uint8_t signal_pin) {
  * The timer hardware then produces the PWM on D6 by itself; no further CPU work is needed.
  */
 void BldcMotor::SetOutput(uint16_t output) {
-	OCR4A = min(output, kMaxOutput);   // OCR4A is the duty: 0 = off, kMaxOutput = full
+	output_ = min(output, kMaxOutput);
+	OCR4A = output_;   // OCR4A is the duty: 0 = off, kMaxOutput = full
+}
+
+/*
+ * IsStalled: detect a motor that is being driven but not turning
+ * (stalled motor or broken feedback line; the two cannot be told apart).
+ * The condition must hold continuously for kStallTimeoutMs, so that normal
+ * start-up (PID still ramping, RPM not yet measured) does not trigger it.
+ */
+bool BldcMotor::IsStalled() {
+	if (set_rpm_ == 0 || output_ < kStallMinOutput || current_rpm_ != 0) {
+		stall_pending_ = false;
+		return false;
+	}
+
+	uint32_t now = millis();
+	if (!stall_pending_) {
+		stall_pending_ = true;
+		stall_since_ms_ = now;
+	}
+	return now - stall_since_ms_ >= kStallTimeoutMs;
 }
 
 /*
