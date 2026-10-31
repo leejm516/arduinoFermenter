@@ -150,61 +150,61 @@
         "output": ".pio/build/megaatmega2560/FrameworkArduino/wiring_shift.c.o"
     },
     {
+        "command": "/home/user1/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/lib759/PID_v1/PID_v1.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60200 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Ilib/PID_v1 -I/home/user1/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/user1/.platformio/packages/framework-arduino-avr/variants/mega lib/PID_v1/PID_v1.cpp",
+        "directory": "/home/user1/Arduino/arduinoFermenter",
+        "file": "lib/PID_v1/PID_v1.cpp",
+        "output": ".pio/build/megaatmega2560/lib759/PID_v1/PID_v1.cpp.o"
+    },
+    {
+        "command": "/home/user1/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/libc20/ControlLoop/controlloop.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60200 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Ilib/ControlLoop -Ilib/PID_v1 -I/home/user1/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/user1/.platformio/packages/framework-arduino-avr/variants/mega lib/ControlLoop/controlloop.cpp",
+        "directory": "/home/user1/Arduino/arduinoFermenter",
+        "file": "lib/ControlLoop/controlloop.cpp",
+        "output": ".pio/build/megaatmega2560/libc20/ControlLoop/controlloop.cpp.o"
+    },
+    {
+        "command": "/home/user1/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/lib45c/Relay/relay.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60200 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Ilib/Relay -I/home/user1/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/user1/.platformio/packages/framework-arduino-avr/variants/mega lib/Relay/relay.cpp",
+        "directory": "/home/user1/Arduino/arduinoFermenter",
+        "file": "lib/Relay/relay.cpp",
+        "output": ".pio/build/megaatmega2560/lib45c/Relay/relay.cpp.o"
+    },
+    {
         "command": "/home/user1/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/lib92f/SPI/SPI.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60200 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -I/home/user1/.platformio/packages/framework-arduino-avr/libraries/SPI/src -I/home/user1/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/user1/.platformio/packages/framework-arduino-avr/variants/mega /home/user1/.platformio/packages/framework-arduino-avr/libraries/SPI/src/SPI.cpp",
         "directory": "/home/user1/Arduino/arduinoFermenter",
         "file": "/home/user1/.platformio/packages/framework-arduino-avr/libraries/SPI/src/SPI.cpp",
         "output": ".pio/build/megaatmega2560/lib92f/SPI/SPI.cpp.o"
     },
     {
-        "command": "/home/user1/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/src/PID_v1.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60200 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Iinclude -Isrc -I/home/user1/.platformio/packages/framework-arduino-avr/libraries/SPI/src -I/home/user1/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/user1/.platformio/packages/framework-arduino-avr/variants/mega src/PID_v1.cpp",
-        "directory": "/home/user1/Arduino/arduinoFermenter",
-        "file": "src/PID_v1.cpp",
-        "output": ".pio/build/megaatmega2560/src/PID_v1.cpp.o"
-    },
-    {
-        "command": "/home/user1/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/src/bldcmotor.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60200 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Iinclude -Isrc -I/home/user1/.platformio/packages/framework-arduino-avr/libraries/SPI/src -I/home/user1/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/user1/.platformio/packages/framework-arduino-avr/variants/mega src/bldcmotor.cpp",
+        "command": "/home/user1/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/src/bldcmotor.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60200 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Iinclude -Isrc -I/home/user1/.platformio/packages/framework-arduino-avr/libraries/SPI/src -Ilib/Relay -Ilib/ControlLoop -Ilib/PID_v1 -I/home/user1/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/user1/.platformio/packages/framework-arduino-avr/variants/mega src/bldcmotor.cpp",
         "directory": "/home/user1/Arduino/arduinoFermenter",
         "file": "src/bldcmotor.cpp",
         "output": ".pio/build/megaatmega2560/src/bldcmotor.cpp.o"
     },
     {
-        "command": "/home/user1/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/src/controlloop.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60200 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Iinclude -Isrc -I/home/user1/.platformio/packages/framework-arduino-avr/libraries/SPI/src -I/home/user1/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/user1/.platformio/packages/framework-arduino-avr/variants/mega src/controlloop.cpp",
-        "directory": "/home/user1/Arduino/arduinoFermenter",
-        "file": "src/controlloop.cpp",
-        "output": ".pio/build/megaatmega2560/src/controlloop.cpp.o"
-    },
-    {
-        "command": "/home/user1/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/src/fermenterdata.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60200 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Iinclude -Isrc -I/home/user1/.platformio/packages/framework-arduino-avr/libraries/SPI/src -I/home/user1/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/user1/.platformio/packages/framework-arduino-avr/variants/mega src/fermenterdata.cpp",
+        "command": "/home/user1/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/src/fermenterdata.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60200 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Iinclude -Isrc -I/home/user1/.platformio/packages/framework-arduino-avr/libraries/SPI/src -Ilib/Relay -Ilib/ControlLoop -Ilib/PID_v1 -I/home/user1/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/user1/.platformio/packages/framework-arduino-avr/variants/mega src/fermenterdata.cpp",
         "directory": "/home/user1/Arduino/arduinoFermenter",
         "file": "src/fermenterdata.cpp",
         "output": ".pio/build/megaatmega2560/src/fermenterdata.cpp.o"
     },
     {
-        "command": "/home/user1/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/src/lightweightmax31865.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60200 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Iinclude -Isrc -I/home/user1/.platformio/packages/framework-arduino-avr/libraries/SPI/src -I/home/user1/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/user1/.platformio/packages/framework-arduino-avr/variants/mega src/lightweightmax31865.cpp",
+        "command": "/home/user1/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/src/lightweightmax31865.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60200 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Iinclude -Isrc -I/home/user1/.platformio/packages/framework-arduino-avr/libraries/SPI/src -Ilib/Relay -Ilib/ControlLoop -Ilib/PID_v1 -I/home/user1/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/user1/.platformio/packages/framework-arduino-avr/variants/mega src/lightweightmax31865.cpp",
         "directory": "/home/user1/Arduino/arduinoFermenter",
         "file": "src/lightweightmax31865.cpp",
         "output": ".pio/build/megaatmega2560/src/lightweightmax31865.cpp.o"
     },
     {
-        "command": "/home/user1/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/src/main.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60200 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Iinclude -Isrc -I/home/user1/.platformio/packages/framework-arduino-avr/libraries/SPI/src -I/home/user1/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/user1/.platformio/packages/framework-arduino-avr/variants/mega src/main.cpp",
+        "command": "/home/user1/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/src/main.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60200 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Iinclude -Isrc -I/home/user1/.platformio/packages/framework-arduino-avr/libraries/SPI/src -Ilib/Relay -Ilib/ControlLoop -Ilib/PID_v1 -I/home/user1/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/user1/.platformio/packages/framework-arduino-avr/variants/mega src/main.cpp",
         "directory": "/home/user1/Arduino/arduinoFermenter",
         "file": "src/main.cpp",
         "output": ".pio/build/megaatmega2560/src/main.cpp.o"
     },
     {
-        "command": "/home/user1/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/src/relay.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60200 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Iinclude -Isrc -I/home/user1/.platformio/packages/framework-arduino-avr/libraries/SPI/src -I/home/user1/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/user1/.platformio/packages/framework-arduino-avr/variants/mega src/relay.cpp",
-        "directory": "/home/user1/Arduino/arduinoFermenter",
-        "file": "src/relay.cpp",
-        "output": ".pio/build/megaatmega2560/src/relay.cpp.o"
-    },
-    {
-        "command": "/home/user1/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/src/simplephcontroller.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60200 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Iinclude -Isrc -I/home/user1/.platformio/packages/framework-arduino-avr/libraries/SPI/src -I/home/user1/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/user1/.platformio/packages/framework-arduino-avr/variants/mega src/simplephcontroller.cpp",
+        "command": "/home/user1/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/src/simplephcontroller.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60200 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Iinclude -Isrc -I/home/user1/.platformio/packages/framework-arduino-avr/libraries/SPI/src -Ilib/Relay -Ilib/ControlLoop -Ilib/PID_v1 -I/home/user1/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/user1/.platformio/packages/framework-arduino-avr/variants/mega src/simplephcontroller.cpp",
         "directory": "/home/user1/Arduino/arduinoFermenter",
         "file": "src/simplephcontroller.cpp",
         "output": ".pio/build/megaatmega2560/src/simplephcontroller.cpp.o"
     },
     {
-        "command": "/home/user1/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/src/temperaturecontroller.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60200 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Iinclude -Isrc -I/home/user1/.platformio/packages/framework-arduino-avr/libraries/SPI/src -I/home/user1/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/user1/.platformio/packages/framework-arduino-avr/variants/mega src/temperaturecontroller.cpp",
+        "command": "/home/user1/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/src/temperaturecontroller.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60200 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Iinclude -Isrc -I/home/user1/.platformio/packages/framework-arduino-avr/libraries/SPI/src -Ilib/Relay -Ilib/ControlLoop -Ilib/PID_v1 -I/home/user1/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/user1/.platformio/packages/framework-arduino-avr/variants/mega src/temperaturecontroller.cpp",
         "directory": "/home/user1/Arduino/arduinoFermenter",
         "file": "src/temperaturecontroller.cpp",
         "output": ".pio/build/megaatmega2560/src/temperaturecontroller.cpp.o"
